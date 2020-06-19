@@ -5,6 +5,7 @@ import (
 
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/bancho/packets"
+	"github.com/infernalfire72/flame/bancho/players"
 )
 
 func StatusUpdate(p *objects.Player, bytes []byte) {
@@ -12,6 +13,6 @@ func StatusUpdate(p *objects.Player, bytes []byte) {
 	if err := layouts.ReadStatus(&status, bytes); err == nil {
 		p.Status = status
 		p.SetRelaxing((p.Mods & 128) != 0)
-		objects.Players.Broadcast(packets.Stats(p))
+		players.Broadcast(packets.Stats(p))
 	}
 }

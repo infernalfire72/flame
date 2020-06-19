@@ -6,13 +6,11 @@ import (
 	"github.com/infernalfire72/flame/constants"
 )
 
-var ChannelMutex sync.RWMutex
-var Channels map[string]*Channel
-
 type Channel struct {
 	Name	string
 	Topic	string
 	Players	[]*Player
+	Mutex	sync.RWMutex
 
 	ReadPerms	constants.AkatsukiPrivileges
 	WritePerms	constants.AkatsukiPrivileges
@@ -20,6 +18,8 @@ type Channel struct {
 }
 
 func (c *Channel) UserCount() int16 {
+	c.Mutex.RLock() // Avoid Data Races
+	defer c.Mutex.RUnlock()
 	return int16(len(c.Players))
 }
 
@@ -28,10 +28,22 @@ func (c *Channel) Join(p *Player) bool {
 		return false
 	}
 
+	c.Mutex.Lock()
 	c.Players = append(c.Players, p)
+	c.Mutex.Unlock()
 	return true
 }
 
 func (c *Channel) Leave(p *Player) {
 	
+}
+
+func (c *Channel) AddMessage(sender *Player, message []byte) {
+	c.Mutex.RLock()
+	for _, receiver := range c.Players {
+		if receiver.ID != sender.ID {
+			receiver.Write(message)
+		}
+	}
+	c.Mutex.RUnlock()
 }

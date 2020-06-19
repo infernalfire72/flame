@@ -11,8 +11,9 @@ import (
 const FileName = "./conf.flm"
 
 type Config struct {
-	Bancho		BanchoConfig
 	Database	DatabaseConfig
+	Bancho		BanchoConfig
+	Web			WebConfig
 }
 
 func Load() (*Config, error) {
@@ -47,12 +48,19 @@ func Create() {
 	defer file.Close()
 
 	c := Config{
-		Bancho:		BanchoConfig {
-			Port:		5001,
-		},
 		Database:	DatabaseConfig {
 			Username:	"root",
 			Database:	"akatsuki",
+		},
+		Bancho:		BanchoConfig {
+			Port:		5001,
+		},
+		Web:		WebConfig {
+			Port:		5002,
+			AllowedMods:	map[string]bool {
+				"RX": true,
+				"AP": false,
+			},
 		},
 	}
 

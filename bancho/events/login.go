@@ -14,7 +14,9 @@ import (
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
+	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/packets"
+	"github.com/infernalfire72/flame/bancho/players"
 )
 
 const (
@@ -122,9 +124,10 @@ func Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	player := objects.NewPlayer(userID)
+	player := players.New(userID)
 	player.Username = username
 	player.SafeUsername = safeUsername
+	player.Password = password
 	player.Privileges = privileges
 	player.IngamePrivileges = privileges.BanchoPrivileges()
 	player.Token = uuid.Must(uuid.NewRandom()).String()
@@ -138,8 +141,8 @@ func Login(ctx *fasthttp.RequestCtx) {
 	// Channels
 	ctx.Write(packets.ChannelInfoEnd())
 
-	objects.ChannelMutex.RLock()
-	for _, c := range objects.Channels {
+	channels.Mutex.RLock()
+	for _, c := range channels.Values {
 		if !player.Privileges.Has(c.ReadPerms) {
 			continue
 		} else if c.Autojoin && c.Join(player) {
@@ -149,7 +152,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 			ctx.Write(packets.AvailableChannel(c))
 		}
 	}
-	objects.ChannelMutex.RUnlock()
+	channels.Mutex.RUnlock()
 
 	player.SetStats(player.Gamemode, player.Relaxing)
 	stats := packets.Stats(player)
@@ -159,14 +162,14 @@ func Login(ctx *fasthttp.RequestCtx) {
 	ctx.Write(stats)
 
 	go func() {
-		objects.Players.Mutex.RLock()
+		players.Mutex.RLock()
 		for _, p := range objects.Players.Players {
 			p.Write(presence, stats)
 			player.Write(packets.Presence(p), packets.Stats(p))
 		}
-		objects.Players.Mutex.RUnlock()
+		players.Mutex.RUnlock()
 
-		objects.Players.AddPlayer(player)
+		players.Add(player)
 
 		var friends []int
 		err = config.Database.Select(&friends, "SELECT user2 FROM users_relationships WHERE user1 = ?", player.ID)

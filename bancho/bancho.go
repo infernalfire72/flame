@@ -11,18 +11,17 @@ import (
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
+	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/events"
 	"github.com/infernalfire72/flame/bancho/packets"
+	"github.com/infernalfire72/flame/bancho/players"
 )
 
 func Start(conf *config.BanchoConfig) {
-	objects.Players = &objects.PlayerCollection{
-		Players: make(map[string]*objects.Player),
-	}
+	channels.Init()
 
-	objects.Channels = make(map[string]*objects.Channel)
 	objects.Matches = make(map[uint16]*objects.MultiplayerLobby)
-	objects.Channels["#osu"] = &objects.Channel{"#osu", "main channel", make([]*objects.Player, 0), 0, 0, true}
+
 	r := router.New()
 
 	r.POST("/", banchoMain)
@@ -39,7 +38,7 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 	if len(token) == 0 {
 		events.Login(ctx)
 	} else {
-		p := objects.Players.Get(token)
+		p := players.Get(token)
 
 		if p == nil {
 			ctx.SetStatusCode(http.StatusUnauthorized)
@@ -64,6 +63,10 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			switch id {
 			case 0:
 				events.StatusUpdate(p, data)
+			case 1:
+				events.IrcMessage(p, data)
+			case 2:
+				events.Logout(p)
 			case 4:
 				events.Ping(p)
 			default:

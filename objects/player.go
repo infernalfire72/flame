@@ -45,14 +45,6 @@ type Player struct {
 	Mutex			sync.Mutex
 }
 
-func NewPlayer(id int) *Player {
-	return &Player {
-		ID:		id,
-		Queue:	io.NewStreamWithCapacity(1024),
-		Ping:	time.Now(),
-	}
-}
-
 func (p *Player) SetRelaxing(relaxing bool) {
 	if relaxing == p.Relaxing {
 		return

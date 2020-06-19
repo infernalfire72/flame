@@ -14,7 +14,7 @@ type Status struct {
 func ReadStatus(s *Status, bytes []byte) error {
 	var err error
 
-	data := io.Stream {bytes, len(bytes), len(bytes), 0}
+	data := io.Stream{bytes, len(bytes), len(bytes), 0}
 	s.Action = byte(data.ReadByte())
 	s.InfoText, err = data.ReadString()
 	if err != nil {
