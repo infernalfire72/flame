@@ -13,8 +13,6 @@ import (
 	"github.com/infernalfire72/flame/utils"
 )
 
-var Players *PlayerCollection
-
 type Player struct {
 	ID					int			`json:"id"`
 	Username			string

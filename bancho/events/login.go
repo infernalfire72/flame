@@ -12,7 +12,6 @@ import (
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/log"
-	"github.com/infernalfire72/flame/objects"
 
 	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/packets"
@@ -163,7 +162,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	go func() {
 		players.Mutex.RLock()
-		for _, p := range objects.Players.Players {
+		for _, p := range players.Values {
 			p.Write(presence, stats)
 			player.Write(packets.Presence(p), packets.Stats(p))
 		}
