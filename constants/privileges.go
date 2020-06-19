@@ -30,7 +30,7 @@ const (
 )
 
 func (a AkatsukiPrivileges) Has(b AkatsukiPrivileges) bool {
-	return (a & b) != 0
+	return (a & b) == b
 }
 
 const FreeSupporter = true

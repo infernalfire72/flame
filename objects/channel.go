@@ -27,7 +27,11 @@ func (c *Channel) Join(p *Player) bool {
 	if !p.Privileges.Has(c.ReadPerms) {
 		return false
 	}
-	
+
 	c.Players = append(c.Players, p)
 	return true
+}
+
+func (c *Channel) Leave(p *Player) {
+	
 }

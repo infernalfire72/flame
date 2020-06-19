@@ -9,7 +9,7 @@ import (
 
 func StatusUpdate(p *objects.Player, bytes []byte) {
 	var status layouts.Status
-	if err := layouts.ReadStatus(&status, bytes); err != nil {
+	if err := layouts.ReadStatus(&status, bytes); err == nil {
 		p.Status = status
 		p.SetRelaxing((p.Mods & 128) != 0)
 		objects.Players.Broadcast(packets.Stats(p))

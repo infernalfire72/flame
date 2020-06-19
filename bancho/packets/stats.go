@@ -1,11 +1,12 @@
 package packets
 
 import (
+	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/objects"
 )
 
 func Stats(p *objects.Player) Packet {
-	var s *objects.ModeData
+	var s *layouts.ModeData
 
 	if p.Relaxing {
 		s = &p.RelaxStats[p.Gamemode]

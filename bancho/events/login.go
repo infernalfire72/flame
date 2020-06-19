@@ -17,9 +17,21 @@ import (
 	"github.com/infernalfire72/flame/bancho/packets"
 )
 
-func invalidateLogin(ctx *fasthttp.RequestCtx) {
+const (
+	_ = -iota
+	InvalidLoginData
+	ClientOutdated
+	UserBanned
+	_
+	ServerError
+	SupporterOnly
+	PasswordReset
+	VerifyIdentity
+)
+
+func invalidateLogin(ctx *fasthttp.RequestCtx, code int) {
 	ctx.Response.Header.Set("cho-token", "no")
-	ctx.Write(packets.LoginReply(-1))
+	ctx.Write(packets.LoginReply(code))
 }
 
 func Login(ctx *fasthttp.RequestCtx) {
@@ -46,28 +58,69 @@ func Login(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			invalidateLogin(ctx)
+			invalidateLogin(ctx, InvalidLoginData)
 			return
 		default:
 			log.Error(err)
 			ctx.SetStatusCode(http.StatusInternalServerError)
+			invalidateLogin(ctx, ServerError)
 			return
 		}
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(password)) != nil {
-		invalidateLogin(ctx)
+		invalidateLogin(ctx, InvalidLoginData)
 		return
 	}
 
 	if (privileges & constants.UserPendingVerification) != 0 {
 		privileges &= ^constants.UserPendingVerification
+		privileges |= constants.UserNormal | constants.UserPublic
 		config.Database.Exec("UPDATE users SET privileges = ? WHERE id = ?", privileges, userID)
 	}
 
-	_ = lines[2]
+	// Client Data Structure:
+	// [0] Version
+	// [1] Timezone
+	// [2] Display City Location
+	// [3] Hash Set
+	// [4] Non-Friend DMs blocked
+	clientData := strings.Split(lines[2], "|")
+	if len(clientData) != 5 {
 
-	// check client data :d
+	}
+
+	// Hash Set Structure:
+	// [0] osu! exe md5
+	// [1] MAC Adresses
+	// [2] Hashed MAC Adresses
+	// [3] Disk UUID
+	// [4] Disk HWID
+	hashSet := strings.Split(clientData[3], ":")
+	if len(hashSet) != 6 {
+
+	}
+
+	var match int
+	if hashSet[4] == "runningunderwine" {
+		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND unique_id = ?", userID, hashSet[3])
+	} else {
+		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND disk_id = ? AND unique_id = ? AND mac = ?", userID, hashSet[4], hashSet[3], hashSet[2])
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		log.Error(err)
+		invalidateLogin(ctx, ServerError)
+		return
+	}
+
+	if match != 0 {
+		// Do stuff (restrict etc.)
+		// Restrict(match)
+		// Ban(userID)
+		invalidateLogin(ctx, UserBanned)
+		return
+	}
 
 	player := objects.NewPlayer(userID)
 	player.Username = username
@@ -87,7 +140,9 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	objects.ChannelMutex.RLock()
 	for _, c := range objects.Channels {
-		if c.Autojoin && c.Join(player) {
+		if !player.Privileges.Has(c.ReadPerms) {
+			continue
+		} else if c.Autojoin && c.Join(player) {
 			ctx.Write(packets.AutojoinChannel(c))
 			ctx.Write(packets.JoinedChannel(c.Name))
 		} else {
@@ -96,6 +151,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 	}
 	objects.ChannelMutex.RUnlock()
 
+	player.SetStats(player.Gamemode, player.Relaxing)
 	stats := packets.Stats(player)
 	presence := packets.Presence(player)
 
@@ -103,25 +159,23 @@ func Login(ctx *fasthttp.RequestCtx) {
 	ctx.Write(stats)
 
 	go func() {
-		objects.PlayerMutex.RLock()
-		for _, p := range objects.Players {
+		objects.Players.Mutex.RLock()
+		for _, p := range objects.Players.Players {
 			p.Write(presence, stats)
 			player.Write(packets.Presence(p), packets.Stats(p))
 		}
-		objects.PlayerMutex.RUnlock()
+		objects.Players.Mutex.RUnlock()
 
-		objects.PlayerMutex.Lock()
-		objects.Players[player.Token] = player
-		objects.PlayerMutex.Unlock()
+		objects.Players.AddPlayer(player)
 
 		var friends []int
-		err := config.Database.Select(&friends, "SELECT user2 FROM users_relationships WHERE user1 = ?", player.ID)
+		err = config.Database.Select(&friends, "SELECT user2 FROM users_relationships WHERE user1 = ?", player.ID)
 		if err != nil && err != sql.ErrNoRows {
 			log.Error(err)
 			return
 		}
-
-		player.Write(packets.FriendsList(friends))
+		pl := packets.FriendsList(friends)
+		player.Write(pl)
 	}()
 
 	log.Infof("%s (%d) logged in.", player.Username, player.ID)

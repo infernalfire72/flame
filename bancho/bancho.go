@@ -16,10 +16,13 @@ import (
 )
 
 func Start(conf *config.BanchoConfig) {
-	objects.Players = make(map[string]*objects.Player)
+	objects.Players = &objects.PlayerCollection{
+		Players: make(map[string]*objects.Player),
+	}
+
 	objects.Channels = make(map[string]*objects.Channel)
 	objects.Matches = make(map[uint16]*objects.MultiplayerLobby)
-
+	objects.Channels["#osu"] = &objects.Channel{"#osu", "main channel", make([]*objects.Player, 0), 0, 0, true}
 	r := router.New()
 
 	r.POST("/", banchoMain)
@@ -36,7 +39,7 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 	if len(token) == 0 {
 		events.Login(ctx)
 	} else {
-		p := objects.Players[token]
+		p := objects.Players.Get(token)
 
 		if p == nil {
 			ctx.SetStatusCode(http.StatusUnauthorized)
@@ -47,17 +50,11 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 		s := io.StreamFrom(ctx.Request.Body())
 
 		for s.Position + 6 < s.Length {
-			id, err := s.ReadInt16()
+			id, _ := s.ReadInt16()
 			// TODO: do we need actual handling here?
-			if err != nil {
-				break
-			}
 
 			s.ReadByte()
-			length, err := s.ReadInt32()
-			if err != nil {
-				break
-			}
+			length, _ := s.ReadInt32()
 
 			data, err := s.ReadSegment(int(length))
 			if err != nil {
@@ -76,6 +73,8 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 
 		p.Mutex.Lock()
 		ctx.Write(p.Queue.Data())
+		p.Queue.Length = 0
+		p.Queue.Position = 0
 		p.Mutex.Unlock()
 	}
 }
