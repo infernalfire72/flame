@@ -12,6 +12,10 @@ var (
 	Mutex	sync.RWMutex
 )
 
+func Init() {
+	Values = make(map[uint16]*objects.MultiplayerLobby)
+}
+
 func Get(id uint16) *objects.MultiplayerLobby {
 	Mutex.RLock()
 	defer Mutex.RUnlock()
