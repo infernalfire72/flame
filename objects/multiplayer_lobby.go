@@ -5,7 +5,6 @@ import (
 
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/io"
-	"github.com/infernalfire72/flame/log"
 )
 
 type MultiplayerLobby struct {
@@ -36,7 +35,18 @@ type MultiplayerLobby struct {
 	Slots		[16]MultiplayerSlot
 }
 
-func (m *MultiplayerLobby) ReadMatch(bytes []byte) {
+func (m *MultiplayerLobby) AddPlayer(p *Player, password string) bool {
+	if password != m.Password {
+		return false
+	}
+
+	m.Mutex.Lock()
+	m.Players = append(m.Players, p)
+	m.Mutex.Unlock()
+	return true
+}
+
+func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
 	s := &io.Stream{bytes, len(bytes), len(bytes), 2}
 	var err error
 
@@ -44,38 +54,32 @@ func (m *MultiplayerLobby) ReadMatch(bytes []byte) {
 	m.Type = constants.MatchType(s.ReadByte())
 	m.Mods, err = s.ReadInt32()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	m.Name, err = s.ReadString()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	m.Password, err = s.ReadString()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	m.BeatmapName, err = s.ReadString()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	m.BeatmapID, err = s.ReadInt32()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	m.BeatmapHash, err = s.ReadString()
 	if err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 
 	s.Position += 32
@@ -114,8 +118,5 @@ func (m *MultiplayerLobby) ReadMatch(bytes []byte) {
 	}
 
 	m.ManiaSeed, err = s.ReadInt32()
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	return err
 }

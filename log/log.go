@@ -53,16 +53,30 @@ func PrintlnColor(c Color, values ...interface{}) {
 	fmt.Println("\x1b[0m")
 }
 
+func Chat(sender, target, message string) {
+	mux.Lock()
+	PrintColor(FgHiBlue, "CHAT    | ")
+	fmt.Printf("%s @ %s: %s", sender, target, message)
+	mux.Unlock()
+}
+
+func Warn(v ...interface{}) {
+	mux.Lock()
+	PrintColor(FgHiYellow, "WARNING | ")
+	fmt.Println(v...)
+	mux.Unlock()
+}
+
 func Info(v ...interface{}) {
 	mux.Lock()
-	PrintColor(FgHiGreen, "INFO  | ")
+	PrintColor(FgHiGreen, "INFO    | ")
 	fmt.Println(v...)
 	mux.Unlock()
 }
 
 func Infof(format string, v ...interface{}) {
 	mux.Lock()
-	PrintColor(FgHiGreen, "INFO  | ")
+	PrintColor(FgHiGreen, "INFO    | ")
 	fmt.Printf(format + "\n", v...)
 	mux.Unlock()
 }
@@ -71,9 +85,9 @@ func Error(err error) {
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
 		mux.Lock()
-		PrintColor(FgRed, "ERROR | ")
+		PrintColor(FgRed, "ERROR   | ")
 		fmt.Println("in", file, "at line", no)
-		fmt.Println("    └› ", err)
+		fmt.Println("      └› ", err)
 		mux.Unlock()
 	}
 }

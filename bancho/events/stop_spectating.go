@@ -1,6 +1,7 @@
 package events
 
 import (
+	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
 	"github.com/infernalfire72/flame/bancho/packets"
@@ -36,4 +37,5 @@ func StopSpectating(p *objects.Player) {
 	host.SpectatorMutex.RUnlock()
 
 	host.Write(packets.SpectatorLeft(int32(p.ID)))
+	log.Info(p.Username, "stopped spectating", host.Username)
 }

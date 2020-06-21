@@ -3,6 +3,7 @@ package events
 import (
 	"unsafe"
 
+	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
 	"github.com/infernalfire72/flame/bancho/packets"
@@ -32,5 +33,7 @@ func StartSpectating(p *objects.Player, bytes []byte) {
 
 		target.Write(channelInfo, packets.NewSpectator(int32(p.ID)))
 		p.Write(packets.JoinedChannel("#spectator"))
+
+		log.Info(p.Username, "started spectating", target.Username)
 	}
 }
