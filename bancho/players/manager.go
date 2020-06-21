@@ -19,7 +19,7 @@ func Get(token string) *objects.Player {
 	return Values[token]
 }
 
-func FindPlayer(id int) *objects.Player {
+func Find(id int) *objects.Player {
 	Mutex.RLock()
 	defer Mutex.RUnlock()
 

@@ -31,11 +31,21 @@ func (c *Channel) Join(p *Player) bool {
 	c.Mutex.Lock()
 	c.Players = append(c.Players, p)
 	c.Mutex.Unlock()
+	p.AddChannel(c)
 	return true
 }
 
 func (c *Channel) Leave(p *Player) {
-	
+	c.Mutex.Lock()
+	for i, t := range c.Players {
+		if t == p {
+			c.Players[i] = c.Players[len(c.Players)-1]
+			c.Players[len(c.Players)-1] = nil
+			c.Players = c.Players[:len(c.Players)-1]
+			break
+		}
+	}
+	c.Mutex.Unlock()
 }
 
 func (c *Channel) AddMessage(sender *Player, message []byte) {

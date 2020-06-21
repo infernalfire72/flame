@@ -9,7 +9,6 @@ import (
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/log"
-	"github.com/infernalfire72/flame/objects"
 
 	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/events"
@@ -19,8 +18,6 @@ import (
 
 func Start(conf *config.BanchoConfig) {
 	channels.Init()
-
-	objects.Matches = make(map[uint16]*objects.MultiplayerLobby)
 
 	r := router.New()
 
@@ -67,8 +64,24 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 				events.IrcMessage(p, data)
 			case 2:
 				events.Logout(p)
+			case 3:
+				events.StatsUpdateRequest(p)
 			case 4:
 				events.Ping(p)
+			case 16:
+				events.StartSpectating(p, data)
+			case 17:
+				events.StopSpectating(p)
+			case 18:
+				events.SpectateFrames(p, data)
+			case 25:
+				events.PrivateMessage(p, data)
+			case 29:
+				events.LeaveLobby(p)
+			case 30:
+				events.JoinLobby(p)
+			case 31:
+				events.CreateMatch(p, data)
 			default:
 				log.Infof("Unhandled Packet %d with length %d", id, length)
 			}

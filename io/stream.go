@@ -185,10 +185,14 @@ func (s *Stream) ReadSegment(size int) ([]byte, error) {
 		return result, nil
 	}
 
-	copy(result, s.Content[s.Position:]) // We don't need a second delimiter because it only copies for dst size
+	copy(result, s.Content[s.Position:])
 	s.Position += size
 
 	return result, nil
+}
+
+func (s *Stream) ReadBoolean() bool {
+	return s.ReadByte() >= 1
 }
 
 func (s *Stream) ReadInt16() (result int16, err error) {

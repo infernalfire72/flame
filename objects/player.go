@@ -14,15 +14,15 @@ import (
 )
 
 type Player struct {
-	ID					int			`json:"id"`
+	ID					int
 	Username			string
 	SafeUsername		string
 	Password			string
-	Token				string
-	IngamePrivileges	constants.BanchoPrivileges
-	Privileges			constants.AkatsukiPrivileges
-
 	Country				byte
+	Privileges			constants.AkatsukiPrivileges
+	IngamePrivileges	constants.BanchoPrivileges
+	Token				string
+
 	Timezone			byte
 	Longitude			float32
 	Latitude			float32
@@ -34,8 +34,12 @@ type Player struct {
 	Relaxing		bool
 
 	Channels		[]*Channel
+	ChannelMutex	sync.RWMutex
+
 	Spectators		[]*Player
+	SpectatorMutex	sync.RWMutex
 	Spectating		*Player
+
 	Match			*MultiplayerLobby
 
 	Ping			time.Time
@@ -80,6 +84,35 @@ func (p *Player) SetStats(mode byte, relax bool) {
 	if err != nil {
 		log.Error(err)
 	}
+}
+
+func (p *Player) AddChannel(c *Channel) {
+	p.ChannelMutex.Lock()
+	p.Channels = append(p.Channels, c)
+	p.ChannelMutex.Unlock()
+}
+
+func (p *Player) RemoveChannel(c *Channel) {
+	p.ChannelMutex.Lock()
+	for i, t := range p.Channels {
+		if t == c {
+			p.Channels[i] = p.Channels[len(p.Channels)-1]
+			p.Channels[len(p.Channels)-1] = nil
+			p.Channels = p.Channels[:len(p.Channels)-1]
+			break
+		}
+	}
+	p.ChannelMutex.Unlock()
+}
+
+func (host *Player) AddSpectator(p *Player) {
+	host.SpectatorMutex.Lock()
+	host.Spectators = append(host.Spectators, p)
+	host.SpectatorMutex.Unlock()
+}
+
+func (host *Player) RemoveSpectator(p *Player) {
+
 }
 
 func (p *Player) Write(data ...[]byte) {

@@ -17,7 +17,7 @@ func Logout(p *objects.Player) {
 	}
 
 	if p.Spectating != nil {
-
+		StopSpectating(p)
 	}
 
 	if p.Match != nil {
