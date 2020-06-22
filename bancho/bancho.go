@@ -93,10 +93,10 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 				events.LeaveMatch(p)
 			case 38:
 				events.ChangeSlot(p, data)
-			/*case 39:
-				events.SlotReady(p, data)
+			case 39:
+				events.SlotReady(p)
 			case 40:
-				events.SlotKickLock(p, data)*/
+				events.SlotKick(p, data)
 			case 41:
 				events.UpdateMatchSettings(p, data)
 			/*case 44:
