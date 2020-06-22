@@ -10,15 +10,7 @@ import (
 )
 
 func CreateMatch(p *objects.Player, bytes []byte) {
-	id := matches.GetNextID()
-
-	if id == 0 {
-		return
-	}
-
-	m := &objects.MultiplayerLobby{
-		ID:	id,
-	}
+	m := matches.New()
 
 	m.ReadMatch(bytes)
 	m.Host = p.ID
@@ -26,6 +18,7 @@ func CreateMatch(p *objects.Player, bytes []byte) {
 	log.Info(p.Username, "created a new MultiplayerLobby", m.Name)
 
 	m.AddPlayer(p, m.Password)
+	lobby.RemovePlayer(p)
 
 	packet := packets.Match(26, m)
 
@@ -35,7 +28,6 @@ func CreateMatch(p *objects.Player, bytes []byte) {
 	}
 	lobby.Mutex.RUnlock()
 
-	p.Write(packet)
-	packet[0] = 36
+	packet.ChangeID(36)
 	p.Write(packet, packets.JoinedChannel("#multiplayer"), packets.AvailableChannelArgs("#multiplayer", "Multiplayer Channel", 1))
 }

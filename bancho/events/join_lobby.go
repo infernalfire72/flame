@@ -11,6 +11,7 @@ import (
 
 func JoinLobby(p *objects.Player) {
 	if c := channels.Get("#lobby"); c != nil && c.Join(p) {
+		p.AddChannel(c)
 		lobby.AddPlayer(p)
 		p.Write(packets.JoinedChannel("#lobby"))
 		players.Broadcast(packets.AvailableChannel(c))

@@ -12,6 +12,7 @@ import (
 func LeaveLobby(p *objects.Player) {
 	if c := channels.Get("#lobby"); c != nil {
 		c.Leave(p)
+		p.RemoveChannel(c)
 		lobby.RemovePlayer(p)
 		p.Write(packets.ChannelRevoked("#lobby"))
 		players.Broadcast(packets.AvailableChannel(c))

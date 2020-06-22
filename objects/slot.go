@@ -10,3 +10,10 @@ type MultiplayerSlot struct {
 
 	Loaded, Skipped, Completed bool
 }
+
+func (s *MultiplayerSlot) Clear() {
+	s.Status = constants.SlotEmpty
+	s.User = nil
+	s.Team = 0
+	s.Mods = 0
+}

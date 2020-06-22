@@ -31,7 +31,6 @@ func (c *Channel) Join(p *Player) bool {
 	c.Mutex.Lock()
 	c.Players = append(c.Players, p)
 	c.Mutex.Unlock()
-	p.AddChannel(c)
 	return true
 }
 

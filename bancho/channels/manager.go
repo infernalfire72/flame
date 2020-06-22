@@ -14,9 +14,11 @@ var (
 
 func Init() {
 	Mutex.Lock()
+
 	Values = make(map[string]*objects.Channel)
 	Values["#osu"] = New("#osu", "Main Channel", 0, 0, true)
 	Values["#announce"] = New("#announce", "Announcements Channel", 0, 0, true)
+	Values["#lobby"] = New("#lobby", "Multiplayer Discussion", 0, 0, false)
 
 	Mutex.Unlock()
 }

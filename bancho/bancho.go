@@ -14,10 +14,13 @@ import (
 	"github.com/infernalfire72/flame/bancho/events"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
+	"github.com/infernalfire72/flame/bancho/matches"
 )
 
 func Start(conf *config.BanchoConfig) {
+	players.Init()
 	channels.Init()
+	matches.Init()
 
 	r := router.New()
 
@@ -38,6 +41,7 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 		p := players.Get(token)
 
 		if p == nil {
+			log.Warn("Token", token, "not found. Forcing them to relog.")
 			ctx.SetStatusCode(http.StatusUnauthorized)
 			ctx.Write(packets.LoginReply(-5))
 			return
@@ -82,6 +86,38 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 				events.JoinLobby(p)
 			case 31:
 				events.CreateMatch(p, data)
+			case 32:
+				events.JoinMatch(p, data)
+			case 33:
+				events.LeaveMatch(p)
+			/*case 38:
+				events.ChangeSlot(p, data)
+			case 39:
+				events.SlotReady(p, data)
+			case 40:
+				events.SlotKickLock(p, data)*/
+			case 41:
+				events.UpdateMatchSettings(p, data)
+			/*case 44:
+				events.StartMatch(p)
+			case 47:
+				events.MatchScoreFrame(p, data)
+			case 49:
+				events.MatchCompleted(p)
+			case 51:
+				events.MatchChangeMods(p, data)
+			case 52:
+				events.MatchLoadComplete(p)
+			case 54:
+				events.MatchMissingBeatmap(p)
+			case 55:
+				events.SlotNotReady(p)
+			case 56:
+				events.MatchFailed(p)
+			case 59:
+				events.MatchHasBeatmap(p)
+			case 60:
+				events.MatchSkip(p)*/
 			default:
 				log.Infof("Unhandled Packet %d with length %d", id, length)
 			}

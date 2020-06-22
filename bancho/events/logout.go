@@ -21,7 +21,7 @@ func Logout(p *objects.Player) {
 	}
 
 	if p.Match != nil {
-
+		LeaveMatch(p)
 	}
 
 	log.Info(p.Username, "logged out.")

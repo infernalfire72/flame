@@ -13,6 +13,10 @@ var (
 	Mutex	sync.RWMutex
 )
 
+func Init() {
+	Values = make(map[string]*objects.Player)
+}
+
 func Get(token string) *objects.Player {
 	Mutex.RLock()
 	defer Mutex.RUnlock()

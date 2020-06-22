@@ -28,3 +28,11 @@ func RemovePlayer(p *objects.Player) {
 	}
 	Mutex.Unlock()
 }
+
+func Write(data []byte) {
+	Mutex.RLock()
+	for _, t := range Players {
+		t.Write(data)
+	}
+	Mutex.RUnlock()
+}

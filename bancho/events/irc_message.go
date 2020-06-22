@@ -25,4 +25,5 @@ func IrcMessage(p *objects.Player, bytes []byte) {
 	}
 
 	target.AddMessage(p, packets.IrcMessage(m))
+	log.Chat(m.Username, m.Target, m.Content)
 }

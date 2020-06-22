@@ -78,6 +78,14 @@ func (s *Stream) WriteByte(value byte) {
 	}
 }
 
+func (s *Stream) WriteBoolean(value bool) {
+	if value {
+		s.WriteByte(1)
+	} else {
+		s.WriteByte(0)
+	}
+}
+
 func (s *Stream) WriteInt16(value int16) {
 	s.WriteAny(unsafe.Pointer(&value), 2)
 }
@@ -199,6 +207,14 @@ func (s *Stream) ReadInt16() (result int16, err error) {
 	var p unsafe.Pointer
 	if p, err = s.ReadAny(2); err == nil {
 		result = *(*int16)(p)
+	}
+	return
+}
+
+func (s *Stream) ReadUint16() (result uint16, err error) {
+	var p unsafe.Pointer
+	if p, err = s.ReadAny(2); err == nil {
+		result = *(*uint16)(p)
 	}
 	return
 }

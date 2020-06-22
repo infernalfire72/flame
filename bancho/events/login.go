@@ -145,6 +145,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 		if !player.Privileges.Has(c.ReadPerms) {
 			continue
 		} else if c.Autojoin && c.Join(player) {
+			player.AddChannel(c)
 			ctx.Write(packets.AutojoinChannel(c))
 			ctx.Write(packets.JoinedChannel(c.Name))
 		} else {

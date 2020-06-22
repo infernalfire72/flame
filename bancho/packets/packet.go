@@ -23,3 +23,8 @@ func MakePacket(id PacketType, values ...interface{}) Packet {
 
 	return s.Data()
 }
+
+func (p Packet) ChangeID(newID int16) {
+	p[0] = byte(newID)
+	p[1] = byte(newID >> 8)
+}

@@ -94,8 +94,8 @@ func (p *Player) AddChannel(c *Channel) {
 
 func (p *Player) RemoveChannel(c *Channel) {
 	p.ChannelMutex.Lock()
-	for i, t := range p.Channels {
-		if t == c {
+	for i := 0; i < len(p.Channels); i++ {
+		if p.Channels[i] == c {
 			p.Channels[i] = p.Channels[len(p.Channels)-1]
 			p.Channels[len(p.Channels)-1] = nil
 			p.Channels = p.Channels[:len(p.Channels)-1]
@@ -121,4 +121,8 @@ func (p *Player) Write(data ...[]byte) {
 		p.Queue.WriteByteSlice(segment)
 	}
 	p.Mutex.Unlock()
+}
+
+func (p Player) String() string {
+	return fmt.Sprintf("%s (%d)", p.Username, p.ID)
 }

@@ -21,5 +21,6 @@ func PrivateMessage(p *objects.Player, bytes []byte) {
 	if target := players.FindPlayerName(m.Target); target != nil {
 		m.Username = p.Username
 		target.Write(packets.IrcMessage(m))
+		log.Chat(m.Username, m.Target, m.Content)
 	}
 }
