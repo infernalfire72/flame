@@ -15,6 +15,7 @@ func AddPlayer(p *objects.Player) {
 	Mutex.Lock()
 	Players = append(Players, p)
 	Mutex.Unlock()
+	p.IsLobby = true
 }
 
 func RemovePlayer(p *objects.Player) {
@@ -27,6 +28,7 @@ func RemovePlayer(p *objects.Player) {
 		}
 	}
 	Mutex.Unlock()
+	p.IsLobby = false
 }
 
 func Write(data []byte) {

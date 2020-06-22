@@ -44,6 +44,7 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			log.Warn("Token", token, "not found. Forcing them to relog.")
 			ctx.SetStatusCode(http.StatusUnauthorized)
 			ctx.Write(packets.LoginReply(-5))
+			ctx.SetConnectionClose()
 			return
 		}
 
@@ -90,9 +91,9 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 				events.JoinMatch(p, data)
 			case 33:
 				events.LeaveMatch(p)
-			/*case 38:
+			case 38:
 				events.ChangeSlot(p, data)
-			case 39:
+			/*case 39:
 				events.SlotReady(p, data)
 			case 40:
 				events.SlotKickLock(p, data)*/

@@ -40,6 +40,7 @@ type Player struct {
 	SpectatorMutex	sync.RWMutex
 	Spectating		*Player
 
+	IsLobby			bool
 	Match			*MultiplayerLobby
 
 	Ping			time.Time

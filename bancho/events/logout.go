@@ -4,6 +4,7 @@ import (
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
+	"github.com/infernalfire72/flame/bancho/lobby"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
 )
@@ -22,6 +23,10 @@ func Logout(p *objects.Player) {
 
 	if p.Match != nil {
 		LeaveMatch(p)
+	}
+
+	if p.IsLobby {
+		lobby.RemovePlayer(p)
 	}
 
 	log.Info(p.Username, "logged out.")

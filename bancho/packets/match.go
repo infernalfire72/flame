@@ -1,7 +1,6 @@
 package packets
 
 import (
-	"fmt"
 	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/objects"
 )
@@ -25,7 +24,6 @@ func Match(id int16, m *objects.MultiplayerLobby) Packet {
 
 	m.Mutex.RLock()
 	for _, slot := range m.Slots {
-		fmt.Println(slot.Status)
 		s.WriteByte(byte(slot.Status))
 	}
 
