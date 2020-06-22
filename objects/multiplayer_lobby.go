@@ -9,31 +9,31 @@ import (
 )
 
 type MultiplayerLobby struct {
-	ID			uint16		`json:"id"`
-	Name		string
-	Password	string		`json:"-"`
+	ID       uint16 `json:"id"`
+	Name     string
+	Password string `json:"-"`
 
-	BeatmapName	string
-	BeatmapID	int32
-	BeatmapHash	string
+	BeatmapName string
+	BeatmapID   int32
+	BeatmapHash string
 
-	Running		bool
-	Type		constants.MatchType
-	ScoringType	constants.MatchScoringType
-	TeamType	constants.MatchTeamType
+	Running     bool
+	Type        constants.MatchType
+	ScoringType constants.MatchScoringType
+	TeamType    constants.MatchTeamType
 
-	Gamemode	byte
-	Mods		int32
-	FreeMod		bool
-	ManiaSeed	int32
+	Gamemode  byte
+	Mods      int32
+	FreeMod   bool
+	ManiaSeed int32
 
-	Host		int
-	Creator		int
+	Host    int
+	Creator int
 
-	Mutex		sync.RWMutex
-	Players		[]*Player
+	Mutex   sync.RWMutex
+	Players []*Player
 
-	Slots		[16]MultiplayerSlot
+	Slots [16]MultiplayerSlot
 }
 
 func (m *MultiplayerLobby) FindFreeSlot() *MultiplayerSlot {

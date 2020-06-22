@@ -8,7 +8,6 @@ import (
 	"github.com/infernalfire72/flame/bancho/packets"
 )
 
-
 func SlotKick(p *objects.Player, bytes []byte) {
 	if len(bytes) < 2 || p.Match == nil || p.Match.Host != p.ID {
 		return

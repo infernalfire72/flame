@@ -3,12 +3,12 @@ package layouts
 import "github.com/infernalfire72/flame/io"
 
 type Status struct {
-	Action		byte
-	InfoText	string
-	BeatmapHash	string
-	Mods		int32
-	Gamemode	byte
-	Beatmap		int32
+	Action      byte
+	InfoText    string
+	BeatmapHash string
+	Mods        int32
+	Gamemode    byte
+	Beatmap     int32
 }
 
 func ReadStatus(s *Status, bytes []byte) error {
@@ -30,7 +30,7 @@ func ReadStatus(s *Status, bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	
+
 	s.Gamemode = byte(data.ReadByte())
 
 	s.Beatmap, err = data.ReadInt32()

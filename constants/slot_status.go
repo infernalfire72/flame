@@ -15,5 +15,5 @@ const (
 )
 
 func (a SlotStatus) HasFlag(b SlotStatus) bool {
-	return b == 0 || (a & b) != 0
+	return b == 0 || (a&b) != 0
 }

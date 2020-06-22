@@ -25,7 +25,7 @@ func StartSpectating(p *objects.Player, bytes []byte) {
 
 		fellowSpectator := packets.NewFellowSpectator(int32(p.ID))
 		target.SpectatorMutex.RLock()
-		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for " + target.Username, int16(len(target.Spectators) + 1))
+		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for "+target.Username, int16(len(target.Spectators)+1))
 		for _, t := range target.Spectators {
 			t.Write(channelInfo, fellowSpectator)
 			p.Write(packets.NewFellowSpectator(int32(t.ID)))

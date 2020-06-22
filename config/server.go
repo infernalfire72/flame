@@ -1,10 +1,10 @@
 package config
 
 type BanchoConfig struct {
-	Port	int
+	Port int
 }
 
 type WebConfig struct {
-	Port			int
-	AllowedMods		map[string]bool
+	Port        int
+	AllowedMods map[string]bool
 }

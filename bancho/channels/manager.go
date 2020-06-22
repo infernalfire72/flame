@@ -3,13 +3,13 @@ package channels
 import (
 	"sync"
 
-	"github.com/infernalfire72/flame/objects"
 	"github.com/infernalfire72/flame/constants"
+	"github.com/infernalfire72/flame/objects"
 )
 
 var (
-	Values	map[string]*objects.Channel
-	Mutex	sync.RWMutex
+	Values map[string]*objects.Channel
+	Mutex  sync.RWMutex
 )
 
 func Init() {
@@ -36,12 +36,12 @@ func Add(c *objects.Channel) {
 }
 
 func New(name, topic string, readPerms, writePerms constants.AkatsukiPrivileges, autojoin bool) *objects.Channel {
-	return &objects.Channel {
-		Name:		name,
-		Topic:		topic,
-		Players:	make([]*objects.Player, 0),
-		ReadPerms:	readPerms,
-		WritePerms:	writePerms,
-		Autojoin:	autojoin,
+	return &objects.Channel{
+		Name:       name,
+		Topic:      topic,
+		Players:    make([]*objects.Player, 0),
+		ReadPerms:  readPerms,
+		WritePerms: writePerms,
+		Autojoin:   autojoin,
 	}
 }

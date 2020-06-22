@@ -5,16 +5,16 @@ import (
 	"net/http"
 
 	"github.com/fasthttp/router"
-	"github.com/valyala/fasthttp"
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/log"
+	"github.com/valyala/fasthttp"
 
 	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/events"
+	"github.com/infernalfire72/flame/bancho/matches"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
-	"github.com/infernalfire72/flame/bancho/matches"
 )
 
 func Start(conf *config.BanchoConfig) {
@@ -50,7 +50,7 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 
 		s := io.StreamFrom(ctx.Request.Body())
 
-		for s.Position + 6 < s.Length {
+		for s.Position+6 < s.Length {
 			id, _ := s.ReadInt16()
 			// TODO: do we need actual handling here?
 

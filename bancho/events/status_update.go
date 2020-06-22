@@ -3,9 +3,9 @@ package events
 import (
 	"github.com/infernalfire72/flame/objects"
 
-	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
+	"github.com/infernalfire72/flame/layouts"
 )
 
 func StatusUpdate(p *objects.Player, bytes []byte) {

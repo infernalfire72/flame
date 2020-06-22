@@ -3,12 +3,12 @@ package layouts
 import "github.com/infernalfire72/flame/constants"
 
 type User struct {
-	ID				int
-	Username		string
-	SafeUsername	string
-	Password		string
-	Country			byte
-	Privileges		constants.AkatsukiPrivileges
+	ID           int
+	Username     string
+	SafeUsername string
+	Password     string
+	Country      byte
+	Privileges   constants.AkatsukiPrivileges
 }
 
 /*func (u *User) VerifyPassword(password string) bool {

@@ -2,8 +2,8 @@ package log
 
 import (
 	"fmt"
-	"sync"
 	"runtime"
+	"sync"
 )
 
 type Color int
@@ -77,7 +77,7 @@ func Info(v ...interface{}) {
 func Infof(format string, v ...interface{}) {
 	mux.Lock()
 	PrintColor(FgHiGreen, "INFO    | ")
-	fmt.Printf(format + "\n", v...)
+	fmt.Printf(format+"\n", v...)
 	mux.Unlock()
 }
 

@@ -2,7 +2,7 @@ package events
 
 import (
 	"time"
-	
+
 	"github.com/infernalfire72/flame/objects"
 )
 

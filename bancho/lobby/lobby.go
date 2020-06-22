@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	Players	[]*objects.Player
-	Mutex	sync.RWMutex
+	Players []*objects.Player
+	Mutex   sync.RWMutex
 )
 
 func AddPlayer(p *objects.Player) {

@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	Values	map[uint16]*objects.MultiplayerLobby
-	Mutex	sync.RWMutex
+	Values map[uint16]*objects.MultiplayerLobby
+	Mutex  sync.RWMutex
 )
 
 func New() *objects.MultiplayerLobby {
 	m := &objects.MultiplayerLobby{
-		ID:		GetNextID(),
+		ID: GetNextID(),
 	}
-	
+
 	for i := 0; i < 16; i++ {
 		m.Slots[i].Status = constants.SlotEmpty
 	}

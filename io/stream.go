@@ -6,10 +6,10 @@ import (
 )
 
 type Stream struct {
-	Content		[]byte
-	Length		int
-	Capacity	int
-	Position	int
+	Content  []byte
+	Length   int
+	Capacity int
+	Position int
 }
 
 func NewStream() *Stream {
@@ -17,17 +17,17 @@ func NewStream() *Stream {
 }
 
 func NewStreamWithCapacity(capacity int) *Stream {
-	return &Stream {
-		Content:	make([]byte, capacity),
-		Capacity:	capacity,
+	return &Stream{
+		Content:  make([]byte, capacity),
+		Capacity: capacity,
 	}
 }
 
 func StreamFrom(data []byte) *Stream {
-	return &Stream {
-		Content:	data,
-		Capacity:	len(data),
-		Length:		len(data),
+	return &Stream{
+		Content:  data,
+		Capacity: len(data),
+		Length:   len(data),
 	}
 }
 
@@ -44,15 +44,15 @@ func (s *Stream) Realloc(capacity int) {
 
 func ByteSliceFromPointer(addr unsafe.Pointer, size int) []byte {
 	slice := struct {
-		addr	unsafe.Pointer
-		len		int
-		cap		int
+		addr unsafe.Pointer
+		len  int
+		cap  int
 	}{addr, size, size}
 	return *(*[]byte)(unsafe.Pointer(&slice))
 }
 
 func (s *Stream) WriteAny(p unsafe.Pointer, size int) {
-	if s.Length + size > s.Capacity {
+	if s.Length+size > s.Capacity {
 		s.Realloc(s.Capacity * 2)
 	}
 
@@ -66,7 +66,7 @@ func (s *Stream) WriteAny(p unsafe.Pointer, size int) {
 }
 
 func (s *Stream) WriteByte(value byte) {
-	if s.Length + 1 > s.Capacity {
+	if s.Length+1 > s.Capacity {
 		s.Realloc(s.Capacity * 2)
 	}
 
@@ -107,7 +107,7 @@ func (s *Stream) WriteFloat64(value float64) {
 }
 
 func (s *Stream) WriteByteSlice(value []byte) {
-	if s.Length + len(value) > s.Capacity {
+	if s.Length+len(value) > s.Capacity {
 		s.Realloc(s.Capacity * 2)
 	}
 
@@ -161,7 +161,7 @@ func (s *Stream) WriteInterface(value interface{}) {
 var ErrEndOfStream error = errors.New("io: end of stream reached")
 
 func (s *Stream) ReadAny(size int) (unsafe.Pointer, error) {
-	if s.Position + size > s.Length {
+	if s.Position+size > s.Length {
 		return nil, ErrEndOfStream
 	}
 
@@ -184,7 +184,7 @@ func (s *Stream) ReadByte() int {
 }
 
 func (s *Stream) ReadSegment(size int) ([]byte, error) {
-	if s.Position + size > s.Length {
+	if s.Position+size > s.Length {
 		return nil, ErrEndOfStream
 	}
 

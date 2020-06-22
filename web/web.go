@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/fasthttp/router"
-	"github.com/valyala/fasthttp"
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/log"
+	"github.com/valyala/fasthttp"
 )
 
 func Start(conf *config.WebConfig) {

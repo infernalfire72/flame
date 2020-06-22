@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
-	"github.com/valyala/fasthttp"
 	"github.com/google/uuid"
+	"github.com/valyala/fasthttp"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
@@ -49,10 +49,10 @@ func Login(ctx *fasthttp.RequestCtx) {
 	password := lines[1]
 
 	var (
-		userID			int
-		safeUsername	string
-		dbPassword 		string
-		privileges		constants.AkatsukiPrivileges
+		userID       int
+		safeUsername string
+		dbPassword   string
+		privileges   constants.AkatsukiPrivileges
 	)
 
 	err := config.Database.QueryRow("SELECT id, username, username_safe, password_md5, privileges FROM users WHERE username = ? OR username_safe = ?;", username, username).Scan(&userID, &username, &safeUsername, &dbPassword, &privileges)

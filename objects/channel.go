@@ -7,14 +7,14 @@ import (
 )
 
 type Channel struct {
-	Name	string
-	Topic	string
-	Players	[]*Player
-	Mutex	sync.RWMutex
+	Name    string
+	Topic   string
+	Players []*Player
+	Mutex   sync.RWMutex
 
-	ReadPerms	constants.AkatsukiPrivileges
-	WritePerms	constants.AkatsukiPrivileges
-	Autojoin	bool
+	ReadPerms  constants.AkatsukiPrivileges
+	WritePerms constants.AkatsukiPrivileges
+	Autojoin   bool
 }
 
 func (c *Channel) UserCount() int16 {

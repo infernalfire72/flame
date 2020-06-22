@@ -18,7 +18,7 @@ func ChangeSlot(p *objects.Player, bytes []byte) {
 	if target > 15 {
 		return
 	}
-	
+
 	m := p.Match
 	slot := &m.Slots[target]
 	if slot.User != nil || slot.Status != constants.SlotEmpty {

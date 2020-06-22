@@ -3,25 +3,25 @@ package charts
 import "fmt"
 
 type BaseChart struct {
-	BeatmapID			int
-	BeatmapSetID		int
-	BeatmapPlaycount	int
-	BeatmapPasscount	int
-	ApprovedDate		time
+	BeatmapID        int
+	BeatmapSetID     int
+	BeatmapPlaycount int
+	BeatmapPasscount int
+	ApprovedDate     time
 }
 
 type Chart struct {
-	ID		string
-	URL		string
-	Name	string
+	ID   string
+	URL  string
+	Name string
 
-	Rank		[2]int
-	MaxCombo	[2]int
-	Accuracy	[2]float32
-	RankedScore	[2]int
-	TotalScore	[2]int
-	Performance	[2]int
-	ScoreID		int
+	Rank        [2]int
+	MaxCombo    [2]int
+	Accuracy    [2]float32
+	RankedScore [2]int
+	TotalScore  [2]int
+	Performance [2]int
+	ScoreID     int
 }
 
 // TODO: This is horrible

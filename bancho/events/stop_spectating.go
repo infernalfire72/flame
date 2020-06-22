@@ -24,11 +24,11 @@ func StopSpectating(p *objects.Player) {
 	if len(host.Spectators) == 0 {
 		host.Write(revoked)
 	} else {
-		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for " + host.Username, int16(len(host.Spectators)))
+		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for "+host.Username, int16(len(host.Spectators)))
 		fellowSpectator := packets.FellowSpectatorLeft(int32(p.ID))
 
 		host.Write(channelInfo)
-		
+
 		for _, t := range host.Spectators {
 			t.Write(channelInfo, fellowSpectator)
 		}

@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	Values	map[string]*objects.Player
-	Mutex	sync.RWMutex
+	Values map[string]*objects.Player
+	Mutex  sync.RWMutex
 )
 
 func Init() {
@@ -77,7 +77,6 @@ func Broadcast(data []byte) {
 	for _, a := range Values {
 		a.Write(data)
 	}
-
 	Mutex.RUnlock()
 }
 
@@ -89,14 +88,13 @@ func BroadcastExcept(data []byte, ignore map[int]bool) {
 			a.Write(data)
 		}
 	}
-
 	Mutex.RUnlock()
 }
 
 func New(id int) *objects.Player {
-	return &objects.Player {
-		ID:		id,
-		Queue:	io.NewStreamWithCapacity(1024),
-		Ping:	time.Now(),
+	return &objects.Player{
+		ID:    id,
+		Queue: io.NewStreamWithCapacity(1024),
+		Ping:  time.Now(),
 	}
 }

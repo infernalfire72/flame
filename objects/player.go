@@ -5,48 +5,48 @@ import (
 	"sync"
 	"time"
 
-	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
+	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/utils"
 )
 
 type Player struct {
-	ID					int
-	Username			string
-	SafeUsername		string
-	Password			string
-	Country				byte
-	Privileges			constants.AkatsukiPrivileges
-	IngamePrivileges	constants.BanchoPrivileges
-	Token				string
+	ID               int
+	Username         string
+	SafeUsername     string
+	Password         string
+	Country          byte
+	Privileges       constants.AkatsukiPrivileges
+	IngamePrivileges constants.BanchoPrivileges
+	Token            string
 
-	Timezone			byte
-	Longitude			float32
-	Latitude			float32
+	Timezone  byte
+	Longitude float32
+	Latitude  float32
 
-	VanillaStats	[4]layouts.ModeData
-	RelaxStats		[3]layouts.ModeData
+	VanillaStats [4]layouts.ModeData
+	RelaxStats   [3]layouts.ModeData
 
 	layouts.Status
-	Relaxing		bool
+	Relaxing bool
 
-	Channels		[]*Channel
-	ChannelMutex	sync.RWMutex
+	Channels     []*Channel
+	ChannelMutex sync.RWMutex
 
-	Spectators		[]*Player
-	SpectatorMutex	sync.RWMutex
-	Spectating		*Player
+	Spectators     []*Player
+	SpectatorMutex sync.RWMutex
+	Spectating     *Player
 
-	IsLobby			bool
-	Match			*MultiplayerLobby
+	IsLobby bool
+	Match   *MultiplayerLobby
 
-	Ping			time.Time
-	LoggedInAt		time.Time
-	Queue			*io.Stream
-	Mutex			sync.Mutex
+	Ping       time.Time
+	LoggedInAt time.Time
+	Queue      *io.Stream
+	Mutex      sync.Mutex
 }
 
 func (p *Player) SetRelaxing(relaxing bool) {
@@ -64,8 +64,8 @@ func (p *Player) SetRelaxing(relaxing bool) {
 
 func (p *Player) SetStats(mode byte, relax bool) {
 	var (
-		s		*layouts.ModeData
-		table	string
+		s     *layouts.ModeData
+		table string
 	)
 
 	if p.Relaxing {
@@ -81,7 +81,7 @@ func (p *Player) SetStats(mode byte, relax bool) {
 	if err != nil {
 		log.Error(err)
 	}
-	
+
 	err = config.Database.Get(&s.Rank, fmt.Sprintf("SELECT COUNT(id) + 1 FROM %s WHERE pp_%s > ?", table, utils.DbMode(p.Gamemode)), s.Performance)
 	if err != nil {
 		log.Error(err)

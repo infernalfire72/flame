@@ -8,10 +8,10 @@ import (
 var Database *sqlx.DB
 
 type DatabaseConfig struct {
-	Host		string
-	Database	string
-	Username	string
-	Password	string
+	Host     string
+	Database string
+	Username string
+	Password string
 }
 
 func (c *DatabaseConfig) String() string {

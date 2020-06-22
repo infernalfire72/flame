@@ -21,8 +21,8 @@ func LeaveMatch(p *objects.Player) {
 		lobby.Write(packets.Match(28, m))
 		matches.Disband(m)
 	} else {
-		matchInfo	:= packets.Match(26, m)
-		channelInfo	:= packets.AvailableChannelArgs("#multiplayer", "Multiplayer Channel", m.UserCount())
+		matchInfo := packets.Match(26, m)
+		channelInfo := packets.AvailableChannelArgs("#multiplayer", "Multiplayer Channel", m.UserCount())
 		m.Write(matchInfo, channelInfo)
 		lobby.Write(matchInfo)
 	}

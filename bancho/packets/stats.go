@@ -15,12 +15,12 @@ func Stats(p *objects.Player) Packet {
 	}
 
 	return MakePacket(11,
-		p.ID, 
-		p.Action, 
-		p.InfoText, 
-		p.BeatmapHash, 
-		p.Mods, 
-		p.Gamemode, 
+		p.ID,
+		p.Action,
+		p.InfoText,
+		p.BeatmapHash,
+		p.Mods,
+		p.Gamemode,
 		p.Beatmap,
 		s.RankedScore,
 		s.Accuracy,

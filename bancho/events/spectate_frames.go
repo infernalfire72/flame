@@ -13,6 +13,6 @@ func SpectateFrames(p *objects.Player, bytes []byte) {
 	for _, t := range p.Spectators {
 		t.Write(packet)
 	}
-	
+
 	p.SpectatorMutex.RUnlock()
 }
