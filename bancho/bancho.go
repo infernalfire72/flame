@@ -119,6 +119,16 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 				events.MatchHasBeatmap(p)
 			case 60:
 				events.MatchSkip(p)*/
+			case 63:
+				events.JoinChannel(p, data)
+			case 68:
+				events.BeatmapInfoRequest(p, data)
+			case 78:
+				events.LeaveChannel(p, data)
+			case 79:
+				events.UserStatsUpdateRequest(p, data)
+			case 85:
+				events.StatsRequest(p, data)
 			default:
 				log.Infof("Unhandled Packet %d with length %d", id, length)
 			}
