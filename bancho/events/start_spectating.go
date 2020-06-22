@@ -21,19 +21,21 @@ func StartSpectating(p *objects.Player, bytes []byte) {
 
 	targetID := *(*int32)(unsafe.Pointer(&bytes[0]))
 	if target := players.Find(int(targetID)); target != nil {
-		target.AddSpectator(p)
+		p.Spectating = target
 
-		target.SpectatorMutex.RLock()
-		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for " + target.Username, int16(len(target.Spectators)))
 		fellowSpectator := packets.NewFellowSpectator(int32(p.ID))
+		target.SpectatorMutex.RLock()
+		channelInfo := packets.AvailableChannelArgs("#spectator", "Spectator Channel for " + target.Username, int16(len(target.Spectators) + 1))
 		for _, t := range target.Spectators {
 			t.Write(channelInfo, fellowSpectator)
+			p.Write(packets.NewFellowSpectator(int32(t.ID)))
 		}
 		target.SpectatorMutex.RUnlock()
+		target.AddSpectator(p)
 
 		target.Write(channelInfo, packets.NewSpectator(int32(p.ID)))
-		p.Write(packets.JoinedChannel("#spectator"))
+		p.Write(packets.JoinedChannel("#spectator"), channelInfo)
 
-		log.Info(p.Username, "started spectating", target.Username)
+		log.Info(p, "started spectating", target)
 	}
 }

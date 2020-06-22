@@ -43,6 +43,7 @@ type Player struct {
 	Match			*MultiplayerLobby
 
 	Ping			time.Time
+	LoggedInAt		time.Time
 	Queue			*io.Stream
 	Mutex			sync.Mutex
 }
@@ -94,8 +95,8 @@ func (p *Player) AddChannel(c *Channel) {
 
 func (p *Player) RemoveChannel(c *Channel) {
 	p.ChannelMutex.Lock()
-	for i := 0; i < len(p.Channels); i++ {
-		if p.Channels[i] == c {
+	for i, t := range p.Channels {
+		if t == c {
 			p.Channels[i] = p.Channels[len(p.Channels)-1]
 			p.Channels[len(p.Channels)-1] = nil
 			p.Channels = p.Channels[:len(p.Channels)-1]
@@ -112,7 +113,15 @@ func (host *Player) AddSpectator(p *Player) {
 }
 
 func (host *Player) RemoveSpectator(p *Player) {
-
+	host.SpectatorMutex.Lock()
+	for i, t := range p.Spectators {
+		if t == p {
+			p.Spectators[i] = p.Spectators[len(p.Spectators)-1]
+			p.Spectators[len(p.Spectators)-1] = nil
+			p.Spectators = p.Spectators[:len(p.Spectators)-1]
+		}
+	}
+	host.SpectatorMutex.Unlock()
 }
 
 func (p *Player) Write(data ...[]byte) {
