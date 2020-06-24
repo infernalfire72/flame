@@ -8,14 +8,14 @@ import (
 	"github.com/infernalfire72/flame/bancho/packets"
 )
 
-func SlotReady(p *objects.Player) {
+func MatchMissingBeatmap(p *objects.Player) {
 	if p.Match == nil {
 		return
 	}
 
 	m := p.Match
 	if slot, _ := m.FindPlayerSlot(p); slot != nil {
-		slot.Status = constants.SlotReady
+		slot.Status = constants.SlotMissingBeatmap
 
 		matchInfo := packets.Match(26, m)
 		m.Write(matchInfo)

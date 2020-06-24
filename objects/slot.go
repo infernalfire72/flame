@@ -6,7 +6,7 @@ type MultiplayerSlot struct {
 	Status constants.SlotStatus
 	Team   byte
 	User   *Player
-	Mods   int32
+	Mods   constants.Mod
 
 	Loaded, Skipped, Completed bool
 }

@@ -18,12 +18,12 @@ type MultiplayerLobby struct {
 	BeatmapHash string
 
 	Running     bool
-	Type        constants.MatchType
+	Type        byte
 	ScoringType constants.MatchScoringType
 	TeamType    constants.MatchTeamType
 
 	Gamemode  byte
-	Mods      int32
+	Mods      constants.Mod
 	FreeMod   bool
 	ManiaSeed int32
 
@@ -48,15 +48,59 @@ func (m *MultiplayerLobby) FindFreeSlot() *MultiplayerSlot {
 	return nil
 }
 
-func (m *MultiplayerLobby) FindPlayerSlot(p *Player) *MultiplayerSlot {
+func (m *MultiplayerLobby) FindPlayerSlot(p *Player) (*MultiplayerSlot, int) {
 	m.Mutex.RLock()
 	defer m.Mutex.RUnlock()
 	for i := 0; i < 16; i++ {
 		if m.Slots[i].User == p {
-			return &m.Slots[i]
+			return &m.Slots[i], i
 		}
 	}
-	return nil
+	return nil, -1
+}
+
+func (m *MultiplayerLobby) FindNextPlayer() (*MultiplayerSlot, int) {
+	m.Mutex.RLock()
+	defer m.Mutex.RUnlock()
+	for i := 0; i < 16; i++ {
+		if m.Slots[i].User != nil {
+			return &m.Slots[i], i
+		}
+	}
+	return nil, -1
+}
+
+func (m *MultiplayerLobby) CheckLoaded() bool {
+	m.Mutex.RLock()
+	defer m.Mutex.RUnlock()
+	for i := 0; i < 16; i++ {
+		if !m.Slots[i].Loaded {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *MultiplayerLobby) CheckSkipped() bool {
+	m.Mutex.RLock()
+	defer m.Mutex.RUnlock()
+	for i := 0; i < 16; i++ {
+		if !m.Slots[i].Skipped {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *MultiplayerLobby) CheckCompleted() bool {
+	m.Mutex.RLock()
+	defer m.Mutex.RUnlock()
+	for i := 0; i < 16; i++ {
+		if !m.Slots[i].Completed {
+			return false
+		}
+	}
+	return true
 }
 
 func (m *MultiplayerLobby) AddPlayer(p *Player, password string) bool {
@@ -80,7 +124,7 @@ func (m *MultiplayerLobby) AddPlayer(p *Player, password string) bool {
 
 // TODO: this
 func (m *MultiplayerLobby) RemovePlayer(p *Player) {
-	if slot := m.FindPlayerSlot(p); slot != nil {
+	if slot, _ := m.FindPlayerSlot(p); slot != nil {
 		p.Match = nil
 		slot.Clear()
 	}
@@ -114,16 +158,32 @@ func (m *MultiplayerLobby) Write(data ...[]byte) {
 	m.Mutex.RUnlock()
 }
 
+func (m *MultiplayerLobby) WritePlaying(data ...[]byte) {
+	m.ForSlots(func(slot *MultiplayerSlot) {
+		if slot.User != nil && slot.Status.HasFlag(constants.SlotPlaying) {
+			slot.User.Write(data...)
+		}
+	})
+}
+
+func (m *MultiplayerLobby) ForSlots(fn func(*MultiplayerSlot)) {
+	m.Mutex.RLock()
+	for i := 0; i < 16; i++ {
+		fn(&m.Slots[i])
+	}
+	m.Mutex.RUnlock()
+}
+
 func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
-	s := &io.Stream{bytes, len(bytes), len(bytes), 2}
+	s := &io.Stream{bytes, len(bytes), len(bytes), 3}
 	var err error
 
-	m.Running = s.ReadBoolean()
-	m.Type = constants.MatchType(s.ReadByte())
-	m.Mods, err = s.ReadInt32()
+	m.Type = byte(s.ReadByte())
+	mods, err := s.ReadInt32()
 	if err != nil {
 		return err
 	}
+	m.Mods = constants.Mod(mods)
 
 	m.Name, err = s.ReadString()
 	if err != nil {
@@ -152,11 +212,11 @@ func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
 
 	s.Position += 32
 
-	for _, slot := range m.Slots {
+	m.ForSlots(func(slot *MultiplayerSlot) {
 		if slot.Status.HasFlag(constants.SlotOccupied) {
 			s.Position += 4
 		}
-	}
+	})
 
 	s.Position += 4
 
@@ -168,20 +228,27 @@ func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
 
 	if freeMod != m.FreeMod {
 		if freeMod {
-			for _, slot := range m.Slots {
+			assignMods := m.Mods
+			assignMods &= ^constants.ModsChangeSpeed
+
+			m.ForSlots(func(slot *MultiplayerSlot) {
 				if slot.User != nil {
-					slot.Mods = m.Mods
+					slot.Mods = assignMods
 				}
-			}
+			})
+
+			m.Mods = m.Mods & constants.ModsChangeSpeed
 		} else {
-			for _, slot := range m.Slots {
+			m.ForSlots(func(slot *MultiplayerSlot) {
 				if slot.User != nil {
+					if slot.User.ID == m.Host {
+						m.Mods = slot.Mods | (m.Mods & constants.ModsChangeSpeed)
+					}
 					slot.Mods = 0
 				}
-			}
+			})
 		}
 
-		m.Mods = 0
 		m.FreeMod = freeMod
 	}
 

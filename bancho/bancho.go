@@ -92,14 +92,14 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			case 33:
 				events.LeaveMatch(p)
 			case 38:
-				events.ChangeSlot(p, data)
+				events.MatchChangeSlot(p, data)
 			case 39:
 				events.SlotReady(p)
 			case 40:
 				events.SlotKick(p, data)
 			case 41:
 				events.UpdateMatchSettings(p, data)
-			/*case 44:
+			case 44:
 				events.StartMatch(p)
 			case 47:
 				events.MatchScoreFrame(p, data)
@@ -118,17 +118,27 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			case 59:
 				events.MatchHasBeatmap(p)
 			case 60:
-				events.MatchSkip(p)*/
+				events.MatchSkip(p)
 			case 63:
 				events.JoinChannel(p, data)
 			case 68:
 				events.BeatmapInfoRequest(p, data)
+			case 70:
+				events.MatchChangeHost(p, data)
+			case 73:
+				events.AddFriend(p, data)
+			case 74:
+				events.RemoveFriend(p, data)
+			case 77:
+				events.MatchChangeTeam(p)
 			case 78:
 				events.LeaveChannel(p, data)
 			case 79:
 				events.UserStatsUpdateRequest(p, data)
 			case 85:
 				events.StatsRequest(p, data)
+			case 90:
+				events.MatchChangePassword(p, data)
 			default:
 				log.Infof("Unhandled Packet %d with length %d", id, length)
 			}

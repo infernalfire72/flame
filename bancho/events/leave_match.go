@@ -21,6 +21,14 @@ func LeaveMatch(p *objects.Player) {
 		lobby.Write(packets.Match(28, m))
 		matches.Disband(m)
 	} else {
+		// Find a new Host
+		if m.Host == p.ID {
+			if slot, index := m.FindNextPlayer(); slot != nil {
+				m.Host = slot.User.ID
+				m.Write(packets.MatchNewHost(int(index)))
+			}
+		}
+
 		matchInfo := packets.Match(26, m)
 		channelInfo := packets.AvailableChannelArgs("#multiplayer", "Multiplayer Channel", m.UserCount())
 		m.Write(matchInfo, channelInfo)

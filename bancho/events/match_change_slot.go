@@ -9,7 +9,7 @@ import (
 	"github.com/infernalfire72/flame/bancho/packets"
 )
 
-func ChangeSlot(p *objects.Player, bytes []byte) {
+func MatchChangeSlot(p *objects.Player, bytes []byte) {
 	if p.Match == nil || len(bytes) < 2 {
 		return
 	}
@@ -25,7 +25,9 @@ func ChangeSlot(p *objects.Player, bytes []byte) {
 		return
 	}
 
-	if pSlot := m.FindPlayerSlot(p); pSlot != nil {
+	if pSlot, _ := m.FindPlayerSlot(p); pSlot != nil {
+		slot.Mods = pSlot.Mods
+		slot.Team = pSlot.Team
 		pSlot.Clear()
 	} else {
 		log.Warn("Player", p, "had no slot?", m)

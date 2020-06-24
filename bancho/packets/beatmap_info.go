@@ -7,7 +7,10 @@ import (
 
 // 2 + 4 + 4 + 4 + 1 + 4 + 2 + 32 = 53
 func BeatmapInfo(beatmapInfo []*layouts.BeatmapInfo) Packet {
-	s := io.NewStreamWithCapacity(53 * len(beatmapInfo))
+	s := io.NewStreamWithCapacity(7 + 53*len(beatmapInfo))
+	s.WriteInt16(69)
+	s.WriteByte(0)
+	s.WriteInt32(0)
 
 	for i, info := range beatmapInfo {
 		s.WriteInt16(int16(i))
