@@ -56,7 +56,7 @@ func PrintlnColor(c Color, values ...interface{}) {
 func Chat(sender, target, message string) {
 	mux.Lock()
 	PrintColor(FgHiBlue, "CHAT    | ")
-	fmt.Printf("%s @ %s: %s", sender, target, message)
+	fmt.Printf("%s @ %s: %s\n", sender, target, message)
 	mux.Unlock()
 }
 

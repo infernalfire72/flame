@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
@@ -130,11 +131,13 @@ func Login(ctx *fasthttp.RequestCtx) {
 	player.Privileges = privileges
 	player.IngamePrivileges = privileges.BanchoPrivileges()
 	player.Token = uuid.Must(uuid.NewRandom()).String()
+	player.LoginTime = time.Now()
 
 	ctx.Response.Header.Set("cho-token", player.Token)
 
 	ctx.Write(packets.LoginReply(player.ID))
 	ctx.Write(packets.ProtocolVersion(19))
+	ctx.Write(packets.UserPrivileges(int(player.IngamePrivileges)))
 	ctx.Write(packets.Alert("Welcome back!"))
 
 	// Channels

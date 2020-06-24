@@ -19,6 +19,7 @@ func Init() {
 	Values["#osu"] = New("#osu", "Main Channel", 0, 0, true)
 	Values["#announce"] = New("#announce", "Announcements Channel", 0, 0, true)
 	Values["#lobby"] = New("#lobby", "Multiplayer Discussion", 0, 0, false)
+	Values["#staff"] = New("#staff", "AKATSUKI GAMER", constants.AdminManagePrivileges, 0, true)
 
 	Mutex.Unlock()
 }

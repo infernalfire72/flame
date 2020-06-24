@@ -43,10 +43,10 @@ type Player struct {
 	IsLobby bool
 	Match   *MultiplayerLobby
 
-	Ping       time.Time
-	LoggedInAt time.Time
-	Queue      *io.Stream
-	Mutex      sync.Mutex
+	Ping      time.Time
+	LoginTime time.Time
+	Queue     *io.Stream
+	Mutex     sync.Mutex
 }
 
 func (p *Player) SetRelaxing(relaxing bool) {

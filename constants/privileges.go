@@ -6,27 +6,27 @@ const (
 	UserPublic AkatsukiPrivileges = 1 << iota
 	UserNormal
 	UserDonor
-	AccessAdminPanel
-	ManageUsers
-	BanUsers
-	SilenceUsers
-	WipeUsers
-	ManageBeatmaps
-	ManageServers
-	ManageSettings
-	ManageBetaKeys
-	ManageReports
-	ManageDocs
-	ManageBadges
-	ViewAdminLogs
-	ManagePrivileges
-	SendAlerts
+	AdminAccessAdminPanel
+	AdminManageUsers
+	AdminBanUsers
+	AdminSilenceUsers
+	AdminWipeUsers
+	AdminManageBeatmaps
+	AdminManageServers
+	AdminManageSettings
+	AdminManageBetaKeys
+	AdminManageReports
+	AdminManageDocs
+	AdminManageBadges
+	AdminViewLogs
+	AdminManagePrivileges
+	AdminSendAlerts
 	ChatMod
-	KickUsers
+	AdminKickUsers
 	UserPendingVerification
 	TournamentStaff
 	AdminCaker
-	Premium
+	UserPremium
 )
 
 func (a AkatsukiPrivileges) Has(b AkatsukiPrivileges) bool {
@@ -40,7 +40,7 @@ func (a AkatsukiPrivileges) BanchoPrivileges() (result BanchoPrivileges) {
 		result |= Player
 	}
 
-	if a.Has(UserDonor) || a.Has(Premium) {
+	if a.Has(UserDonor) || a.Has(UserPremium) {
 		result |= Supporter
 	}
 
@@ -48,7 +48,7 @@ func (a AkatsukiPrivileges) BanchoPrivileges() (result BanchoPrivileges) {
 		result |= Supporter | Moderator
 	}
 
-	if a.Has(AdminCaker | ManagePrivileges) {
+	if a.Has(AdminCaker | AdminManagePrivileges) {
 		result |= Developer
 	}
 
