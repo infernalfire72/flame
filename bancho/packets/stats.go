@@ -9,9 +9,9 @@ func Stats(p *objects.Player) Packet {
 	var s *layouts.ModeData
 
 	if p.Relaxing {
-		s = &p.RelaxStats[p.Gamemode]
+		s = &p.Relax[p.Gamemode]
 	} else {
-		s = &p.VanillaStats[p.Gamemode]
+		s = &p.Vanilla[p.Gamemode]
 	}
 
 	return MakePacket(11,

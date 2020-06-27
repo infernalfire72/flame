@@ -5,6 +5,6 @@ type BanchoConfig struct {
 }
 
 type WebConfig struct {
-	Port        int
-	AllowedMods map[string]bool
+	Port           int
+	ScreenshotPath string
 }

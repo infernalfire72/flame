@@ -8,15 +8,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/log"
+	"github.com/infernalfire72/flame/objects"
+	"github.com/infernalfire72/flame/utils"
 
 	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
+
+	"github.com/infernalfire72/flame/cache/users"
+	"github.com/infernalfire72/flame/cache/users/stats"
 )
 
 const (
@@ -49,36 +53,25 @@ func Login(ctx *fasthttp.RequestCtx) {
 	username := lines[0]
 	password := lines[1]
 
-	var (
-		userID       int
-		safeUsername string
-		dbPassword   string
-		privileges   constants.AkatsukiPrivileges
-	)
-
-	err := config.Database.QueryRow("SELECT id, username, username_safe, password_md5, privileges FROM users WHERE username = ? OR username_safe = ?;", username, username).Scan(&userID, &username, &safeUsername, &dbPassword, &privileges)
+	s := &utils.Stopwatch{}
+	s.Start()
+	u, err := users.FindUsername(username)
 	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			invalidateLogin(ctx, InvalidLoginData)
-			return
-		default:
-			log.Error(err)
-			ctx.SetStatusCode(http.StatusInternalServerError)
-			invalidateLogin(ctx, ServerError)
-			return
-		}
+		log.Error(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		invalidateLogin(ctx, ServerError)
+		return
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(password)) != nil {
+	if u == nil || !u.VerifyPassword(password) {
 		invalidateLogin(ctx, InvalidLoginData)
 		return
 	}
 
-	if (privileges & constants.UserPendingVerification) != 0 {
-		privileges &= ^constants.UserPendingVerification
-		privileges |= constants.UserNormal | constants.UserPublic
-		config.Database.Exec("UPDATE users SET privileges = ? WHERE id = ?", privileges, userID)
+	if (u.Privileges & constants.UserPendingVerification) != 0 {
+		u.Privileges &= ^constants.UserPendingVerification
+		u.Privileges |= constants.UserNormal | constants.UserPublic
+		config.Database.Exec("UPDATE users SET privileges = ? WHERE id = ?", u.Privileges, u.ID)
 	}
 
 	// Client Data Structure:
@@ -105,9 +98,9 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	var match int
 	if hashSet[4] == "runningunderwine" {
-		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND unique_id = ?", userID, hashSet[3])
+		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND unique_id = ?", u.ID, hashSet[3])
 	} else {
-		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND disk_id = ? AND unique_id = ? AND mac = ?", userID, hashSet[4], hashSet[3], hashSet[2])
+		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND disk_id = ? AND unique_id = ? AND mac = ?", u.ID, hashSet[4], hashSet[3], hashSet[2])
 	}
 
 	if err != nil && err != sql.ErrNoRows {
@@ -124,12 +117,8 @@ func Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	player := players.New(userID)
-	player.Username = username
-	player.SafeUsername = safeUsername
-	player.Password = password
-	player.Privileges = privileges
-	player.IngamePrivileges = privileges.BanchoPrivileges()
+	player := players.New(u)
+	player.IngamePrivileges = u.Privileges.BanchoPrivileges()
 	player.Token = uuid.Must(uuid.NewRandom()).String()
 	player.LoginTime = time.Now()
 
@@ -157,7 +146,18 @@ func Login(ctx *fasthttp.RequestCtx) {
 	}
 	channels.Mutex.RUnlock()
 
-	player.SetStats(player.Gamemode, player.Relaxing)
+	// TODO: make this better
+	if player.Country == 0 {
+		var country string
+		if err = config.Database.Get(&country, "SELECT country FROM users_stats WHERE id = ?", player.ID); err == nil {
+			player.Country = utils.CountryByte(country)
+		}
+	}
+
+	if s := stats.Get(player.ID); s != nil {
+		player.Stats = s
+	}
+
 	stats := packets.Stats(player)
 	presence := packets.Presence(player)
 
@@ -165,12 +165,10 @@ func Login(ctx *fasthttp.RequestCtx) {
 	ctx.Write(stats)
 
 	go func() {
-		players.Mutex.RLock()
-		for _, p := range players.Values {
+		players.ForEach(func(p *objects.Player) {
 			p.Write(presence, stats)
 			player.Write(packets.Presence(p), packets.Stats(p))
-		}
-		players.Mutex.RUnlock()
+		})
 
 		players.Add(player)
 
@@ -184,5 +182,6 @@ func Login(ctx *fasthttp.RequestCtx) {
 		player.Write(pl)
 	}()
 
-	log.Infof("%s (%d) logged in.", player.Username, player.ID)
+	s.Stop()
+	log.Infof("%s (%d) logged in. | Elapsed: %s", player.Username, player.ID, s.ElapsedReadable())
 }

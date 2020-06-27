@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/infernalfire72/flame/io"
+	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/objects"
 )
 
@@ -35,7 +36,7 @@ func Find(id int) *objects.Player {
 	return nil
 }
 
-func FindPlayerName(name string) *objects.Player {
+func FindUsername(name string) *objects.Player {
 	Mutex.RLock()
 	defer Mutex.RUnlock()
 
@@ -47,7 +48,7 @@ func FindPlayerName(name string) *objects.Player {
 	return nil
 }
 
-func FindPlayerNameSafe(safeName string) *objects.Player {
+func FindSafeUsername(safeName string) *objects.Player {
 	Mutex.RLock()
 	defer Mutex.RUnlock()
 
@@ -71,29 +72,31 @@ func Remove(p *objects.Player) {
 	Mutex.Unlock()
 }
 
-func Broadcast(data []byte) {
+func ForEach(fn func(*objects.Player)) {
 	Mutex.RLock()
-
-	for _, a := range Values {
-		a.Write(data)
+	for _, p := range Values {
+		fn(p)
 	}
 	Mutex.RUnlock()
+}
+
+func Broadcast(data []byte) {
+	ForEach(func(p *objects.Player) {
+		p.Write(data)
+	})
 }
 
 func BroadcastExcept(data []byte, ignore map[int]bool) {
-	Mutex.RLock()
-
-	for _, a := range Values {
-		if !ignore[a.ID] {
-			a.Write(data)
+	ForEach(func(p *objects.Player) {
+		if !ignore[p.ID] {
+			p.Write(data)
 		}
-	}
-	Mutex.RUnlock()
+	})
 }
 
-func New(id int) *objects.Player {
+func New(user *layouts.User) *objects.Player {
 	return &objects.Player{
-		ID:    id,
+		User:  user,
 		Queue: io.NewStreamWithCapacity(1024),
 		Ping:  time.Now(),
 	}

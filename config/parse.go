@@ -16,6 +16,10 @@ type Config struct {
 	Web      WebConfig
 }
 
+var (
+	Web *WebConfig
+)
+
 func Load() (*Config, error) {
 	data, err := ioutil.ReadFile(FileName)
 	if err != nil {
@@ -34,6 +38,8 @@ func Load() (*Config, error) {
 		log.Error(err)
 		return nil, err
 	}
+
+	Web = &conf.Web
 
 	defer log.Info("Config has been loaded")
 	return conf, nil
@@ -56,11 +62,8 @@ func Create() {
 			Port: 5001,
 		},
 		Web: WebConfig{
-			Port: 5002,
-			AllowedMods: map[string]bool{
-				"RX": true,
-				"AP": false,
-			},
+			Port:           5002,
+			ScreenshotPath: "./data/screenshots/%s.png",
 		},
 	}
 

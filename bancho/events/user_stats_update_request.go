@@ -7,6 +7,8 @@ import (
 
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
+
+	"github.com/infernalfire72/flame/cache/users/stats"
 )
 
 func UserStatsUpdateRequest(p *objects.Player, bytes []byte) {
@@ -16,7 +18,7 @@ func UserStatsUpdateRequest(p *objects.Player, bytes []byte) {
 
 	id := *(*int32)(unsafe.Pointer(&bytes[0]))
 	if target := players.Find(int(id)); target != nil {
-		target.SetStats(target.Gamemode, target.Relaxing)
+		stats.FetchOneFromDb(target.ID, target.Gamemode, target.Relaxing)
 		p.Write(packets.Stats(target))
 	}
 }
