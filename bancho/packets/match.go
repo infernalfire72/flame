@@ -52,7 +52,7 @@ func Match(id int16, m *objects.MultiplayerLobby) Packet {
 	s.WriteInt32(m.ManiaSeed)
 
 	s.Position = 3
-	s.WriteInt32(int32(s.Length - 7))
+	s.WriteInt32(int32(len(s.Content) - 7))
 
-	return s.Data()
+	return s.Content
 }

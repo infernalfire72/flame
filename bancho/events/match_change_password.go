@@ -13,7 +13,7 @@ func MatchChangePassword(p *objects.Player, bytes []byte) {
 		return
 	}
 
-	s := &io.Stream{bytes, len(bytes), len(bytes), 8}
+	s := &io.Stream{bytes, 8}
 	_, err := s.ReadString()
 	if err != nil {
 		return

@@ -14,7 +14,7 @@ var (
 	Mutex  sync.RWMutex
 )
 
-func Init() {
+func init() {
 	Values = make(map[string]*objects.Player)
 }
 

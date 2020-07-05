@@ -6,6 +6,7 @@ import (
 	"github.com/infernalfire72/flame/cache"
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/log"
+	"github.com/infernalfire72/flame/osuapi"
 	"github.com/infernalfire72/flame/web"
 	"github.com/jmoiron/sqlx"
 )
@@ -30,6 +31,8 @@ func main() {
 		return
 	}
 
-	go bancho.Start(&conf.Bancho)
-	web.Start(&conf.Web)
+	config.ApiClient = osuapi.New(conf.OsuApi.Key)
+
+	go web.Start(&conf.Web)
+	bancho.Start(&conf.Bancho)
 }

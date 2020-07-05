@@ -175,10 +175,14 @@ func (m *MultiplayerLobby) ForSlots(fn func(*MultiplayerSlot)) {
 }
 
 func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
-	s := &io.Stream{bytes, len(bytes), len(bytes), 3}
+	s := &io.Stream{bytes, 3}
 	var err error
 
-	m.Type = byte(s.ReadByte())
+	m.Type, err = s.ReadByte()
+	if err != nil {
+		return err
+	}
+
 	mods, err := s.ReadInt32()
 	if err != nil {
 		return err
@@ -220,11 +224,24 @@ func (m *MultiplayerLobby) ReadMatch(bytes []byte) error {
 
 	s.Position += 4
 
-	m.Gamemode = byte(s.ReadByte())
-	m.ScoringType = constants.MatchScoringType(s.ReadByte())
-	m.TeamType = constants.MatchTeamType(s.ReadByte())
+	m.Gamemode, err = s.ReadByte()
+	if err != nil {
+		return err
+	}
 
-	freeMod := s.ReadBoolean()
+	if t, err := s.ReadByte(); err == nil {
+		m.ScoringType = constants.MatchScoringType(t)
+	} else {
+		return err
+	}
+
+	if t, err := s.ReadByte(); err == nil {
+		m.TeamType = constants.MatchTeamType(t)
+	} else {
+		return err
+	}
+
+	freeMod, _ := s.ReadBoolean()
 
 	if freeMod != m.FreeMod {
 		if freeMod {

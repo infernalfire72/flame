@@ -89,15 +89,26 @@ func GetScores(ctx router.WebCtx) {
 	b := beatmaps.Get(md5)
 	if b == nil {
 		// Fetch from osu api if no result, get from /web/maps/filename if empty, not submitted, if content need update
-		// b = beatmaps.FetchFromApi(md5, file)
+		b = beatmaps.FetchFromApi(md5, file)
+	}
+
+	if b == nil {
+		ctx.SetConnectionClose()
 		return
 	}
 
 	if b.Status <= constants.StatusNeedUpdate {
-		ctx.WriteString(b.String())
+		ctx.WriteString(b.Online())
 		return
 	}
-	limit := 50
+
+	limit := 100
+	if p.Privileges.Has(constants.UserPremium) {
+		limit = 500
+	} else if p.Privileges.Has(constants.UserDonor) {
+		limit = 250
+	}
+
 	if lb := leaderboards.Get(leaderboards.Identifier{md5, byte(mode), relax}); lb != nil {
 		var scores leaderboards.Scores
 
@@ -109,10 +120,12 @@ func GetScores(ctx router.WebCtx) {
 		case 4:
 			scores = lb.Country(p.Country)
 		default:
-			scores = lb.Scores
+			lb.Mutex.RLock()
+			scores = append(make(leaderboards.Scores, 0), lb.Scores...)
+			lb.Mutex.RUnlock()
 		}
 
-		ctx.WriteString(b.StringC(len(scores)))
+		ctx.WriteString(b.OnlineRanked(len(scores)))
 
 		if personalBest, index := scores.GetPersonalBest(p.ID); personalBest != nil {
 			ctx.WriteString(personalBest.String(!lb.Relax || b.Status == constants.StatusLoved, index+1))
@@ -124,11 +137,9 @@ func GetScores(ctx router.WebCtx) {
 			scores = scores[:limit]
 		}
 
-		lb.Mutex.RLock()
 		for i, score := range scores {
 			ctx.WriteString(score.String(!lb.Relax || b.Status == constants.StatusLoved, i+1))
 		}
-		lb.Mutex.RUnlock()
 	}
 }
 

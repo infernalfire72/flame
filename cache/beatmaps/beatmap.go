@@ -6,6 +6,7 @@ import (
 
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
+	osuapi "github.com/thehowl/go-osuapi"
 )
 
 type Beatmap struct {
@@ -31,10 +32,37 @@ func (b *Beatmap) FetchFromDb() error {
 	return nil
 }
 
-func (b *Beatmap) String() string {
+func (b *Beatmap) SetToDb() error {
+	_, err := config.Database.Exec("REPLACE INTO beatmaps (beatmap_id, beatmapset_id, beatmap_md5, song_name, ranked, latest_update) VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP())")
+	return err
+}
+
+func (b *Beatmap) FetchFromApi(filename string) error {
+	res, err := config.ApiClient.GetBeatmaps(osuapi.GetBeatmapsOpts{
+		BeatmapHash: b.Md5,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		file := config.ApiClient.GetBeatmapContent(filename)
+		if len(file) > 25 {
+			b.Status = constants.StatusNeedUpdate
+		} else {
+			b.Status = constants.StatusNotSubmitted
+		}
+	} else {
+		fmt.Println(res)
+	}
+
+	return nil
+}
+
+func (b *Beatmap) Online() string {
 	return fmt.Sprintf("%d|false", b.Status)
 }
 
-func (b *Beatmap) StringC(scoresCount int) string {
+func (b *Beatmap) OnlineRanked(scoresCount int) string {
 	return fmt.Sprintf("%d|false|%d|%d|%d\n0\n%s\n10.0\n", b.Status, b.ID, b.SetID, scoresCount, b.Name)
 }

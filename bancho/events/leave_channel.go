@@ -11,7 +11,7 @@ import (
 )
 
 func LeaveChannel(p *objects.Player, bytes []byte) {
-	s := io.Stream{bytes, len(bytes), len(bytes), 0}
+	s := io.Stream{bytes, 0}
 
 	target, err := s.ReadString()
 	if err != nil || len(target) == 0 || target[0] != '#' {

@@ -25,7 +25,7 @@ func New() *objects.MultiplayerLobby {
 	return m
 }
 
-func Init() {
+func init() {
 	Values = make(map[uint16]*objects.MultiplayerLobby)
 }
 

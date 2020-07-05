@@ -14,6 +14,7 @@ type Config struct {
 	Database DatabaseConfig
 	Bancho   BanchoConfig
 	Web      WebConfig
+	OsuApi   OsuApiConfig
 }
 
 var (
@@ -64,6 +65,9 @@ func Create() {
 		Web: WebConfig{
 			Port:           5002,
 			ScreenshotPath: "./data/screenshots/%s.png",
+		},
+		OsuApi: OsuApiConfig{
+			Key: "idk",
 		},
 	}
 

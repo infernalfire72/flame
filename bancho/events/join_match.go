@@ -15,7 +15,7 @@ func JoinMatch(p *objects.Player, bytes []byte) {
 		LeaveMatch(p)
 	}
 
-	s := io.Stream{bytes, len(bytes), len(bytes), 0}
+	s := io.Stream{bytes, 0}
 
 	id, err := s.ReadUint16()
 	if err != nil {

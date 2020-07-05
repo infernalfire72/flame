@@ -10,7 +10,7 @@ type Message struct {
 }
 
 func ReadMessage(bytes []byte, m *Message) (err error) {
-	data := io.Stream{bytes, len(bytes), len(bytes), 0}
+	data := io.Stream{bytes, 0}
 
 	m.Username, err = data.ReadString()
 	if err != nil {

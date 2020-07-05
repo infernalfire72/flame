@@ -12,16 +12,12 @@ var (
 	Mutex  sync.RWMutex
 )
 
-func Init() {
-	Mutex.Lock()
-
+func init() {
 	Values = make(map[string]*objects.Channel)
 	Values["#osu"] = New("#osu", "Main Channel", 0, 0, true)
 	Values["#announce"] = New("#announce", "Announcements Channel", 0, 0, true)
 	Values["#lobby"] = New("#lobby", "Multiplayer Discussion", 0, 0, false)
 	Values["#staff"] = New("#staff", "AKATSUKI GAMER", constants.AdminManagePrivileges, 0, true)
-
-	Mutex.Unlock()
 }
 
 func Get(name string) *objects.Channel {

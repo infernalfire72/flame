@@ -2,7 +2,6 @@ package bancho
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/fasthttp/router"
 	"github.com/infernalfire72/flame/config"
@@ -10,18 +9,12 @@ import (
 	"github.com/infernalfire72/flame/log"
 	"github.com/valyala/fasthttp"
 
-	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/events"
-	"github.com/infernalfire72/flame/bancho/matches"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
 )
 
 func Start(conf *config.BanchoConfig) {
-	players.Init()
-	channels.Init()
-	matches.Init()
-
 	r := router.New()
 
 	r.POST("/", banchoMain)
@@ -42,15 +35,14 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 
 		if p == nil {
 			log.Warn("Token", token, "not found. Forcing them to relog.")
-			ctx.SetStatusCode(http.StatusUnauthorized)
-			ctx.Write(packets.LoginReply(-5))
+			ctx.Write(packets.Restart(100))
 			ctx.SetConnectionClose()
 			return
 		}
 
 		s := io.StreamFrom(ctx.Request.Body())
 
-		for s.Position+6 < s.Length {
+		for s.Position+6 < len(s.Content) {
 			id, _ := s.ReadInt16()
 			// TODO: do we need actual handling here?
 
@@ -145,8 +137,8 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 		}
 
 		p.Mutex.Lock()
-		ctx.Write(p.Queue.Data())
-		p.Queue.Length = 0
+		ctx.Write(p.Queue.Content)
+		p.Queue.Content = p.Queue.Content[:0]
 		p.Queue.Position = 0
 		p.Mutex.Unlock()
 	}

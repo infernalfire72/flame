@@ -7,7 +7,7 @@ type BeatmapInfoRequest struct {
 }
 
 func ReadBeatmapInfoRequest(b *BeatmapInfoRequest, bytes []byte) (err error) {
-	s := io.Stream{bytes, len(bytes), len(bytes), 0}
+	s := io.Stream{bytes, 0}
 
 	count, err := s.ReadInt32()
 	if err != nil {

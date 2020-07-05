@@ -14,8 +14,12 @@ type Status struct {
 func ReadStatus(s *Status, bytes []byte) error {
 	var err error
 
-	data := io.Stream{bytes, len(bytes), len(bytes), 0}
-	s.Action = byte(data.ReadByte())
+	data := io.Stream{bytes, 0}
+	s.Action, err = data.ReadByte()
+	if err != nil {
+		return err
+	}
+
 	s.InfoText, err = data.ReadString()
 	if err != nil {
 		return err
@@ -31,7 +35,10 @@ func ReadStatus(s *Status, bytes []byte) error {
 		return err
 	}
 
-	s.Gamemode = byte(data.ReadByte())
+	s.Gamemode, err = data.ReadByte()
+	if err != nil {
+		return err
+	}
 
 	s.Beatmap, err = data.ReadInt32()
 

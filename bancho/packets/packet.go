@@ -19,9 +19,9 @@ func MakePacket(id PacketType, values ...interface{}) Packet {
 	}
 
 	s.Position = 3
-	s.WriteInt32(int32(s.Length - 7))
+	s.WriteInt32(int32(len(s.Content) - 7))
 
-	return s.Data()
+	return s.Content
 }
 
 func (p Packet) ChangeID(newID int16) {

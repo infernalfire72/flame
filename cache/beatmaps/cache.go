@@ -3,6 +3,9 @@ package beatmaps
 import (
 	"sync"
 	"time"
+
+	"github.com/infernalfire72/flame/constants"
+	"github.com/infernalfire72/flame/log"
 )
 
 var (
@@ -37,10 +40,37 @@ func FetchFromDb(md5 string) *Beatmap {
 		Md5: md5,
 	}
 
-	b.FetchFromDb()
+	err := b.FetchFromDb()
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
+
 	Mutex.Lock()
 	defer Mutex.Unlock()
 
 	Values[md5] = b
+	return b
+}
+
+func FetchFromApi(md5, filename string) *Beatmap {
+	b := &Beatmap{
+		Md5: md5,
+	}
+
+	err := b.FetchFromApi(filename)
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
+
+	if b.Status >= constants.StatusRanked {
+		b.SetToDb()
+
+		Mutex.Lock()
+		Values[md5] = b
+		Mutex.Unlock()
+	}
+
 	return b
 }
