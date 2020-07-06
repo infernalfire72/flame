@@ -98,11 +98,14 @@ func LoadCommand(path, name string) {
 		return
 	}
 
-	c := &Command{}
-	c.Name = name
-	c.Syntax = syntax.Interface().(string)
-	c.Aliases = aliases.Interface().([]string)
-	c.Handler = fn.Interface().(func(*objects.Player, []string, objects.Target))
+	c := &Command{
+		CommandInfo: CommandInfo{
+			Name:    name,
+			Syntax:  syntax.Interface().(string),
+			Aliases: aliases.Interface().([]string),
+		},
+		Handler: fn.Interface().(func(*objects.Player, []string, objects.Target)),
+	}
 
 	Mutex.Lock()
 	Commands[name] = c
