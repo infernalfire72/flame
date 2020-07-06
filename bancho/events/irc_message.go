@@ -1,10 +1,13 @@
 package events
 
 import (
+	"strings"
+
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
+	"github.com/infernalfire72/flame/bancho/bot"
 	"github.com/infernalfire72/flame/bancho/channels"
 	"github.com/infernalfire72/flame/bancho/packets"
 )
@@ -22,6 +25,16 @@ func IrcMessage(p *objects.Player, bytes []byte) {
 	if target == nil {
 		log.Info(p.Username, "tried to write to non-existent channel", m.Target)
 		return
+	}
+
+	p.AwaiterMutex.RLock()
+	if p.MessageAwaiter != nil {
+		p.MessageAwaiter <- m.Content
+	}
+	p.AwaiterMutex.RUnlock()
+
+	if strings.HasPrefix(m.Content, bot.CommandPrefix) {
+		go bot.ExecuteCommand(p, m.Content, target)
 	}
 
 	target.AddMessage(p, packets.IrcMessage(m))

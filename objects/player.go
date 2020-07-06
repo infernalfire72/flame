@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -38,6 +39,36 @@ type Player struct {
 	LoginTime time.Time
 	Queue     *io.Stream
 	Mutex     sync.Mutex
+
+	AwaiterMutex   sync.RWMutex
+	MessageAwaiter chan string
+}
+
+func (p *Player) AwaitMessage(timeout time.Duration) (string, error) {
+	p.AwaiterMutex.RLock()
+	if p.MessageAwaiter != nil {
+		p.AwaiterMutex.RUnlock()
+		return "", errors.New("cmderr: already waiting")
+	}
+
+	p.AwaiterMutex.RUnlock()
+
+	p.AwaiterMutex.Lock()
+	p.MessageAwaiter = make(chan string)
+	p.AwaiterMutex.Unlock()
+
+	defer func(){
+		p.AwaiterMutex.Lock()
+		p.MessageAwaiter = nil
+		p.AwaiterMutex.Unlock()
+	}()
+
+	select {
+	case res := <-p.MessageAwaiter:
+		return res, nil
+	case <-time.After(timeout * time.Millisecond):
+		return "", errors.New("cmderr: timeout")
+	}
 }
 
 func (p *Player) SetRelaxing(relaxing bool) {

@@ -17,6 +17,10 @@ type Channel struct {
 	Autojoin   bool
 }
 
+func (c *Channel) GetName() string {
+	return c.Name
+}
+
 func (c *Channel) UserCount() int16 {
 	c.Mutex.RLock() // Avoid Data Races
 	defer c.Mutex.RUnlock()
@@ -53,6 +57,14 @@ func (c *Channel) AddMessage(sender *Player, message []byte) {
 		if receiver.ID != sender.ID {
 			receiver.Write(message)
 		}
+	}
+	c.Mutex.RUnlock()
+}
+
+func (c *Channel) Write(data ...[]byte) {
+	c.Mutex.RLock()
+	for _, receiver := range c.Players {
+		receiver.Write(data...)
 	}
 	c.Mutex.RUnlock()
 }
