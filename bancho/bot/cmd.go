@@ -104,7 +104,7 @@ func LoadCommand(path, name string) {
 			Syntax:  syntax.Interface().(string),
 			Aliases: aliases.Interface().([]string),
 		},
-		Handler: fn.Interface().(func(*objects.Player, []string, objects.Target)),
+		Handler:     fn.Interface().(func(*objects.Player, []string, objects.Target)),
 	}
 
 	Mutex.Lock()
@@ -128,25 +128,13 @@ func UnloadCommands() {
 }
 
 func reload(p *objects.Player, args []string, target objects.Target) {
-	UnloadCommands()
 	LoadCommands()
 
 	target.Write(packets.IrcMessageArgs("Bot", "Done", target.GetName(), 999))
 }
 
 func LoadCommands() {
-	Mutex.Lock()
-	Commands = map[string]*Command{
-		"reload": &Command{
-			CommandInfo: CommandInfo{
-				Name:    "reload",
-				Syntax:  "reload",
-				Aliases: []string{"r"},
-			},
-			Handler: reload,
-		},
-	}
-	Mutex.Unlock()
+	UnloadCommands()
 
 	files, err := ioutil.ReadDir("./bancho/bot/cmds/")
 	if err != nil {
