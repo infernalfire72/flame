@@ -54,7 +54,7 @@ func LoadCommand(path, name string) {
 	var dat []byte
 	for _, file := range fs {
 		if strings.HasSuffix(file.Name(), ".go") {
-			dat, err = ioutil.ReadFile(path+file.Name())
+			dat, err = ioutil.ReadFile(path + file.Name())
 			if err != nil {
 				log.Error(err)
 				return
@@ -104,7 +104,7 @@ func LoadCommand(path, name string) {
 			Syntax:  syntax.Interface().(string),
 			Aliases: aliases.Interface().([]string),
 		},
-		Handler:     fn.Interface().(func(*objects.Player, []string, objects.Target)),
+		Handler: fn.Interface().(func(*objects.Player, []string, objects.Target)),
 	}
 
 	Mutex.Lock()
@@ -146,7 +146,7 @@ func LoadCommands() {
 		if f.IsDir() {
 			fName := f.Name()
 			log.Info("Loading Command", fName)
-			
+
 			LoadCommand("./bancho/bot/commands/"+fName+"/", fName)
 		}
 	}
@@ -176,6 +176,6 @@ func Execute(sender *objects.Player, content string, target objects.Target) {
 	if cmd == nil {
 		return
 	}
-	
+
 	cmd.Handler(sender, args, target)
 }

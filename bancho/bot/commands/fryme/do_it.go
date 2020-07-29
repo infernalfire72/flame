@@ -22,7 +22,7 @@ func Run(sender *objects.Player, args []string, target objects.Target) {
 	sender.WriteDelayed(packets.MakePacket(66, "BanchoBot"), 1)
 	sender.Write(packets.MakePacket(8))*/
 
-	/*sender.Write(packets.MakePacket(23), 
+	/*sender.Write(packets.MakePacket(23),
 		packets.IrcMessageArgs("BanchoBot", "Helo", sender.Username, 3),
 		packets.MakePacket(66, "#osu"))
 

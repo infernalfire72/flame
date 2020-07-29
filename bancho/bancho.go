@@ -46,7 +46,6 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			}
 		}
 
-
 		s := io.StreamFrom(ctx.Request.Body())
 
 		for s.Position+6 < len(s.Content) {

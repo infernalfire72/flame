@@ -1,6 +1,6 @@
 package objects
 
-type Target interface{
+type Target interface {
 	GetName() string
 	Write(...[]byte)
 }

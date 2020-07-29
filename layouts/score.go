@@ -9,32 +9,32 @@ import (
 
 type Score struct {
 	ID          int
-	BeatmapHash	string
-	Username	string
+	BeatmapHash string
+	Username    string
 	UserID      int
-	ScoreHash	string
+	ScoreHash   string
 
-	N300		int
-	N100		int
-	N50			int
-	NGeki		int
-	NKatu		int
-	NMiss		int
+	N300  int
+	N100  int
+	N50   int
+	NGeki int
+	NKatu int
+	NMiss int
 
-	TotalScore	int
-	Combo		int
-	FullCombo	bool
-	Rank		string
+	TotalScore int
+	Combo      int
+	FullCombo  bool
+	Rank       string
 
-	Mods		constants.Mod
-	Passed		bool
-	Mode		int
+	Mods   constants.Mod
+	Passed bool
+	Mode   int
 
-	Timestamp	int
-	Version		int
+	Timestamp int
+	Version   int
 
-	Flags		int
-	
+	Flags int
+
 	Relax       bool
 	Performance float32
 	Status      int
@@ -42,45 +42,45 @@ type Score struct {
 
 func ReadScoreLayout(parts []string, out *Score) (err error) {
 	out.BeatmapHash = parts[0]
-	out.Username	= parts[1]
-	out.ScoreHash	= parts[2]
+	out.Username = parts[1]
+	out.ScoreHash = parts[2]
 
-	out.N300, err	= strconv.Atoi(parts[3])
+	out.N300, err = strconv.Atoi(parts[3])
 	if err != nil {
 		return
 	}
 
-	out.N100, err	= strconv.Atoi(parts[4])
+	out.N100, err = strconv.Atoi(parts[4])
 	if err != nil {
 		return
 	}
 
-	out.N50, err	= strconv.Atoi(parts[5])
+	out.N50, err = strconv.Atoi(parts[5])
 	if err != nil {
 		return
 	}
 
-	out.NGeki, err	= strconv.Atoi(parts[6])
+	out.NGeki, err = strconv.Atoi(parts[6])
 	if err != nil {
 		return
 	}
 
-	out.NKatu, err	= strconv.Atoi(parts[7])
+	out.NKatu, err = strconv.Atoi(parts[7])
 	if err != nil {
 		return
 	}
 
-	out.NMiss, err	= strconv.Atoi(parts[8])
+	out.NMiss, err = strconv.Atoi(parts[8])
 	if err != nil {
 		return
 	}
 
-	out.TotalScore, err	= strconv.Atoi(parts[9])
+	out.TotalScore, err = strconv.Atoi(parts[9])
 	if err != nil {
 		return
 	}
 
-	out.Combo, err	= strconv.Atoi(parts[10])
+	out.Combo, err = strconv.Atoi(parts[10])
 	if err != nil {
 		return
 	}

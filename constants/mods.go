@@ -38,5 +38,5 @@ const (
 )
 
 func (a Mod) Has(b Mod) bool {
-	return b == 0 || (a & b) != 0
+	return b == 0 || (a&b) != 0
 }

@@ -109,7 +109,7 @@ func (p *Player) AwaitMessage(timeout time.Duration) (string, error) {
 	p.MessageAwaiter = make(chan string)
 	p.AwaiterMutex.Unlock()
 
-	defer func(){
+	defer func() {
 		p.AwaiterMutex.Lock()
 		p.MessageAwaiter = nil
 		p.AwaiterMutex.Unlock()

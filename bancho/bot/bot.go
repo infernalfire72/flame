@@ -39,6 +39,6 @@ func init() {
 func WriteMessagef(target objects.Target, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	target.Write(packets.IrcMessage(layouts.Message{
-				Player.Username, msg, target.GetName(), int32(Player.ID),
-			}))
+		Player.Username, msg, target.GetName(), int32(Player.ID),
+	}))
 }
