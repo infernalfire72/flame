@@ -13,7 +13,7 @@ var (
 	Values map[string]*Beatmap
 )
 
-func Init() {
+func init() {
 	Mutex.Lock()
 	Values = make(map[string]*Beatmap)
 	Mutex.Unlock()

@@ -15,7 +15,7 @@ var (
 	Mutex  sync.RWMutex
 )
 
-func Init() {
+func init() {
 	Mutex.Lock()
 	Values = make(map[int]*layouts.User)
 	Mutex.Unlock()

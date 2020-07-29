@@ -12,7 +12,7 @@ var (
 	Values map[Identifier]*Leaderboard
 )
 
-func Init() {
+func init() {
 	Mutex.Lock()
 	Values = make(map[Identifier]*Leaderboard)
 	Mutex.Unlock()

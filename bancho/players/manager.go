@@ -80,10 +80,18 @@ func ForEach(fn func(*objects.Player)) {
 	Mutex.RUnlock()
 }
 
-func Broadcast(data []byte) {
+func Broadcast(data ...[]byte) {
 	ForEach(func(p *objects.Player) {
 		if len(p.Token) != 0 {
-			p.Write(data)
+			p.Write(data...)
+		}
+	})
+}
+
+func BroadcastDelayed(data []byte, delayBy int) {
+	ForEach(func(p *objects.Player) {
+		if len(p.Token) != 0 {
+			p.WriteDelayed(data, delayBy)
 		}
 	})
 }

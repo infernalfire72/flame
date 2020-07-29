@@ -22,7 +22,17 @@ func Start(conf *config.BanchoConfig) {
 	port := fmt.Sprintf(":%d", conf.Port)
 
 	log.Info("Started Bancho at", port)
-	go fasthttp.ListenAndServe(port, r.Handler)
+
+	go func() {
+		if err := fasthttp.ListenAndServe(port, r.Handler); err != nil {
+			log.Error(err)
+		}
+	}()
+}
+
+func Stop() {
+	players.BroadcastDelayed(packets.Restart(1000), 1)
+	players.Broadcast(packets.Alert("The Server is shutting down now..."), packets.Pong()) // Force client to request with Pong for instant packet exchange
 }
 
 func banchoMain(ctx *fasthttp.RequestCtx) {

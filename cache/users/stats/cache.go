@@ -15,7 +15,7 @@ var (
 	Values map[int]*layouts.Stats
 )
 
-func Init() {
+func init() {
 	Mutex.Lock()
 	Values = make(map[int]*layouts.Stats)
 	Mutex.Unlock()

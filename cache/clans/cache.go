@@ -23,7 +23,7 @@ var (
 	Values map[int]*Clan
 )
 
-func Init() {
+func init() {
 	Mutex.Lock()
 	Values = make(map[int]*Clan)
 	Mutex.Unlock()

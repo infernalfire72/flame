@@ -38,4 +38,8 @@ func main() {
 	exit := make(chan os.Signal)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-exit
+
+	bancho.Stop()
+
+	log.Info("Exiting...")
 }
