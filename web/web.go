@@ -12,6 +12,14 @@ import (
 	"github.com/infernalfire72/flame/web/router"
 )
 
+func wrap(next fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		log.Warn("Web", string(ctx.Path()))
+
+		next(ctx)
+	}
+}
+
 func Start(conf *config.WebConfig) {
 	r := router.NewRouter()
 
@@ -24,7 +32,7 @@ func Start(conf *config.WebConfig) {
 
 	port := fmt.Sprintf(":%d", conf.Port)
 	log.Info("Started Web at", port)
-	fasthttp.ListenAndServe(port, r.Handler)
+	go fasthttp.ListenAndServe(port, wrap(r.Handler))
 }
 
 func allT(ctx router.WebCtx) {

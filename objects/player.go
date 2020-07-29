@@ -3,6 +3,7 @@ package objects
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -35,13 +36,64 @@ type Player struct {
 	IsLobby bool
 	Match   *MultiplayerLobby
 
-	Ping      time.Time
-	LoginTime time.Time
-	Queue     *io.Stream
-	Mutex     sync.Mutex
+	Ping       time.Time
+	LoginTime  time.Time
+	Queue      *io.Stream
+	DelayQueue []*DelayedPacket
+	Mutex      sync.RWMutex
 
 	AwaiterMutex   sync.RWMutex
 	MessageAwaiter chan string
+}
+
+func (p *Player) GetName() string {
+	return p.Username
+}
+
+type DelayedPacket struct {
+	Content []byte
+	DelayBy int
+}
+
+func (p *Player) WriteDelayed(data []byte, by int) {
+	if by < 1 {
+		p.Write(data)
+		return
+	}
+
+	p.Mutex.Lock()
+	p.DelayQueue = append(p.DelayQueue, &DelayedPacket{data, by})
+	sort.Slice(p.DelayQueue, func(i, j int) bool {
+		return p.DelayQueue[i].DelayBy < p.DelayQueue[j].DelayBy
+	})
+	p.Mutex.Unlock()
+}
+
+func (p *Player) GetDelayed() [][]byte {
+	var packets [][]byte
+
+	p.Mutex.RLock()
+	for _, packet := range p.DelayQueue {
+		packet.DelayBy--
+
+		if packet.DelayBy == 0 {
+			packets = append(packets, packet.Content)
+		}
+	}
+	p.Mutex.RUnlock()
+
+	if len(packets) == 0 {
+		return nil
+	}
+
+	p.Mutex.Lock()
+	for i := 0; i < len(packets); i++ {
+		p.DelayQueue[i] = nil
+	}
+	p.DelayQueue = p.DelayQueue[len(packets):]
+	p.Mutex.Unlock()
+
+	return packets
 }
 
 func (p *Player) AwaitMessage(timeout time.Duration) (string, error) {

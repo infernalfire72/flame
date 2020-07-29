@@ -8,7 +8,7 @@ import (
 	"github.com/infernalfire72/flame/cache/users/stats"
 )
 
-func Init() {
+func init() {
 	beatmaps.Init()
 	leaderboards.Init()
 

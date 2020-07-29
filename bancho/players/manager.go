@@ -82,7 +82,9 @@ func ForEach(fn func(*objects.Player)) {
 
 func Broadcast(data []byte) {
 	ForEach(func(p *objects.Player) {
-		p.Write(data)
+		if len(p.Token) != 0 {
+			p.Write(data)
+		}
 	})
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/infernalfire72/flame/cache/beatmaps"
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
+	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/utils"
 )
@@ -57,6 +58,17 @@ func (l *Leaderboard) AddScore(s *Score) {
 	l.Scores = append(l.Scores, s)
 	l.Mutex.Unlock()
 	l.Sort()
+}
+
+func (l *Leaderboard) AddFromLayout(s *layouts.Score) {
+	l.AddScore(&Score{
+		ID:          s.ID,
+		UserID:      s.UserID,
+		Score:       s.TotalScore,
+		Performance: s.Performance,
+		Combo:       s.Combo,
+		FullCombo:   s.FullCombo,
+	})
 }
 
 func (l *Leaderboard) Sort() {

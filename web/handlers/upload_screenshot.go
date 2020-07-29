@@ -40,7 +40,7 @@ func UploadScreenshot(ctx router.WebCtx) {
 	}
 
 	if p := players.FindUsername(username[0]); p != nil {
-		if password[0] != p.Password {
+		if !p.VerifyPassword(password[0]) {
 			ctx.SetStatusCode(http.StatusUnauthorized)
 			return
 		}

@@ -1,4 +1,4 @@
-package bot
+package commands
 
 import (
 	"errors"
@@ -20,7 +20,7 @@ func init() {
 	LoadCommands()
 }
 
-const CommandPrefix string = "!"
+const Prefix string = "!"
 
 var (
 	Commands map[string]*Command
@@ -130,13 +130,13 @@ func UnloadCommands() {
 func reload(p *objects.Player, args []string, target objects.Target) {
 	LoadCommands()
 
-	target.Write(packets.IrcMessageArgs("Bot", "Done", target.GetName(), 999))
+	target.Write(packets.IrcMessageArgs("system", "Done", target.GetName(), 999))
 }
 
 func LoadCommands() {
 	UnloadCommands()
 
-	files, err := ioutil.ReadDir("./bancho/bot/cmds/")
+	files, err := ioutil.ReadDir("./bancho/bot/commands/")
 	if err != nil {
 		log.Error(err)
 		return
@@ -147,12 +147,12 @@ func LoadCommands() {
 			fName := f.Name()
 			log.Info("Loading Command", fName)
 			
-			LoadCommand("./bancho/bot/cmds/"+fName+"/", fName)
+			LoadCommand("./bancho/bot/commands/"+fName+"/", fName)
 		}
 	}
 }
 
-func ExecuteCommand(sender *objects.Player, content string, target objects.Target) {
+func Execute(sender *objects.Player, content string, target objects.Target) {
 	content = content[1:]
 
 	var (

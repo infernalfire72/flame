@@ -1,3 +1,4 @@
+// Stupid package for some web functions..
 package router
 
 import (

@@ -22,7 +22,7 @@ func Start(conf *config.BanchoConfig) {
 	port := fmt.Sprintf(":%d", conf.Port)
 
 	log.Info("Started Bancho at", port)
-	fasthttp.ListenAndServe(port, r.Handler)
+	go fasthttp.ListenAndServe(port, r.Handler)
 }
 
 func banchoMain(ctx *fasthttp.RequestCtx) {
@@ -39,6 +39,13 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			ctx.SetConnectionClose()
 			return
 		}
+
+		if delayed := p.GetDelayed(); delayed != nil {
+			for _, packet := range delayed {
+				ctx.Write(packet)
+			}
+		}
+
 
 		s := io.StreamFrom(ctx.Request.Body())
 

@@ -36,3 +36,7 @@ const (
 
 	ModsChangeSpeed = ModHalftime | ModDoubletime | ModNightcore
 )
+
+func (a Mod) Has(b Mod) bool {
+	return b == 0 || (a & b) != 0
+}

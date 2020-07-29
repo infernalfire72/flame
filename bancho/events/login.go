@@ -166,7 +166,10 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	go func() {
 		players.ForEach(func(p *objects.Player) {
-			p.Write(presence, stats)
+			if len(p.Token) != 0 {
+				p.Write(presence, stats)
+			}
+
 			player.Write(packets.Presence(p), packets.Stats(p))
 		})
 
