@@ -2,9 +2,6 @@ package leaderboards
 
 import (
 	"sync"
-
-	"github.com/infernalfire72/flame/config"
-	"github.com/infernalfire72/flame/log"
 )
 
 var (
@@ -61,7 +58,8 @@ func RemoveUserWithIdentifier(id int, rx bool) {
 	Mutex.RUnlock()
 }
 
-func AddUser(id int) {
+// TODO: rewrite this using layouts.Score
+/*func AddUser(id int) {
 	for i, table := range [...]string{"scores", "scores_relax"} {
 		var relax bool
 		if i == 1 {
@@ -78,7 +76,7 @@ func AddUser(id int) {
 			s := &Score{}
 			var (
 				md5  string
-				mode byte
+				mode constants.Mode
 			)
 			err = rows.Scan(&s.ID, &s.UserID, &s.Score, &s.Performance, &s.Combo, &s.FullCombo, &s.Mods, &s.N300, &s.N100, &s.N50, &s.NKatu, &s.NGeki, &s.NMiss, &s.Timestamp, &mode, &md5)
 			if err != nil {
@@ -93,4 +91,4 @@ func AddUser(id int) {
 			Mutex.RUnlock()
 		}
 	}
-}
+}*/

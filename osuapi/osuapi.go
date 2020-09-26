@@ -1,43 +1,33 @@
 package osuapi
 
 import (
-	"fmt"
-	osuapi "github.com/thehowl/go-osuapi"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
-type Client struct {
-	*osuapi.Client
-	web *http.Client
+var (
+	Enabled bool
+	client  *http.Client
+	Key     string
+)
+
+func init() {
+	client = &http.Client{}
 }
 
-func New(key string) *Client {
-	return &Client{
-		osuapi.NewClient(key),
-		&http.Client{},
-	}
-}
-
-func (c *Client) GetBeatmapContent(file string) []byte {
-	req, err := http.NewRequest("GET", "https://osu.ppy.sh/web/maps/"+file, nil)
+func makerq(endpoint string, queryString url.Values) ([]byte, error) {
+	queryString.Set("k", Key)
+	req, err := http.NewRequest("GET", "https://osu.ppy.sh/api/"+endpoint+"?"+queryString.Encode(), nil)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil, err
 	}
 
-	res, err := c.web.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil, err
 	}
-	defer res.Body.Close()
-
-	data, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	return data
+	data, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	return data, err
 }

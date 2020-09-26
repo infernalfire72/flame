@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/celso-wo/rijndael256"
+	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
@@ -17,13 +18,6 @@ import (
 	"github.com/infernalfire72/flame/cache/beatmaps"
 	"github.com/infernalfire72/flame/cache/leaderboards"
 	"github.com/infernalfire72/flame/web/router"
-)
-
-const (
-	Failed = iota
-	_
-	Passed
-	TopScore
 )
 
 func SubmitModular(ctx router.WebCtx) {
@@ -102,9 +96,9 @@ func SubmitModular(ctx router.WebCtx) {
 		return
 	}
 
-	_ = !p.Privileges.Has(constants.UserPublic)
+	restricted := !p.Privileges.Has(constants.UserPublic)
 
-	s := layouts.Score{}
+	var s layouts.Score
 	err = layouts.ReadScoreLayout(parts, &s)
 	if err != nil {
 		log.Error(err)
@@ -118,32 +112,48 @@ func SubmitModular(ctx router.WebCtx) {
 		return
 	}
 
+	/*
+	Code Removed because peppy let unranked shit submit so lets go ig
 	if beatmap.Status < constants.StatusRanked {
 		ctx.Error("beatmap")
 		log.Warn("Score Submission |", "Beatmap is unranked.")
 		return
-	}
+	}*/
 
 	// Playtime here
 
 	// Calculate pp
 
-	lb := leaderboards.Get(leaderboards.Identifier{s.BeatmapHash, byte(s.Mode), s.Relax})
+	maxPerformanceThreshold := func(mode constants.Mode, relax bool) float32 {
+		return 1700;
+	}
+
+	if !restricted {
+		if max := maxPerformanceThreshold(s.Mode, s.Relax); s.Performance > max {
+
+		}
+	}
+
+	lb := leaderboards.Get(leaderboards.Identifier{s.BeatmapHash, s.Mode, s.Relax})
 	if lb == nil {
 		ctx.Error("beatmap")
 		return
 	}
 
-	oldPersonalBest, oldMapRank := lb.FindUserScore(p.ID)
-	if oldPersonalBest == nil || s.Performance > oldPersonalBest.Performance {
-		s.Status = TopScore
-	} else if s.Passed {
-		s.Status = Passed
+	oldPersonalBest, _ := lb.FindUserScore(p.ID)
+
+
+	if oldPersonalBest == nil || s.Performance >= oldPersonalBest.Performance {
+		s.Status = constants.ScoreBestPerformance
+		// replace score in cache here
 	} else {
-		s.Status = Failed
+		s.Status = constants.ScorePassed
 	}
 
-	log.Info("Current Best", oldMapRank, oldPersonalBest.Performance)
+	err = s.AddToDatabase(config.Database)
+	if err != nil {
+		log.Error(err)
+	}
 
 	if c := channels.Get("#announce"); c != nil {
 		bot.WriteMessagef(c, "%v submitted a score on %s", p, s.BeatmapHash)

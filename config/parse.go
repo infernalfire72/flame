@@ -17,6 +17,11 @@ type Config struct {
 	OsuApi   OsuApiConfig
 }
 
+type OsuApiConfig struct {
+	Enable bool
+	Key    string
+}
+
 var (
 	Web *WebConfig
 )

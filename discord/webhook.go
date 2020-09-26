@@ -12,6 +12,10 @@ type Webhook struct {
 	Client *fasthttp.Client
 }
 
+func NewWebhook(id uint64, token string) *Webhook {
+	return &Webhook{id, token, &fasthttp.Client{}}
+}
+
 func (w *Webhook) Execute(options WebhookOptions) error {
 	req := fasthttp.AcquireRequest()
 
@@ -24,15 +28,12 @@ func (w *Webhook) Execute(options WebhookOptions) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(req.Body()))
 
 	res := fasthttp.AcquireResponse()
 	err = w.Client.Do(req, res)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(string(res.Body()))
 
 	fasthttp.ReleaseResponse(res)
 

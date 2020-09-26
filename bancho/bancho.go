@@ -30,11 +30,6 @@ func Start(conf *config.BanchoConfig) {
 	}()
 }
 
-func Stop() {
-	players.BroadcastDelayed(packets.Restart(1000), 1)
-	players.Broadcast(packets.Alert("The Server is shutting down now..."), packets.Pong()) // Force client to request with Pong for instant packet exchange
-}
-
 func banchoMain(ctx *fasthttp.RequestCtx) {
 	token := string(ctx.Request.Header.Peek("osu-token"))
 

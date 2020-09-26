@@ -32,13 +32,13 @@ func Run(sender *objects.Player, args []string, target objects.Target) {
 
 	//sender.Write(packets.MakePacket(86, 10))
 
-	sender.Write(packets.MakePacket(12, sender.ID, 0))
+	//sender.Write(packets.MakePacket(12, sender.ID, 0))
 
-	/*if len(args) != 0 {
+	if len(args) != 0 {
 		name := strings.Join(args, " ")
 
 		sender.Username = name
 
 		sender.Write(packets.Presence(sender))
-	}*/
+	}
 }

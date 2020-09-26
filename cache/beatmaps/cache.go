@@ -14,9 +14,7 @@ var (
 )
 
 func init() {
-	Mutex.Lock()
 	Values = make(map[string]*Beatmap)
-	Mutex.Unlock()
 }
 
 func Get(md5 string) *Beatmap {

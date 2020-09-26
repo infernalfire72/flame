@@ -6,7 +6,7 @@ import (
 
 	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
-	osuapi "github.com/thehowl/go-osuapi"
+	"github.com/infernalfire72/flame/osuapi"
 )
 
 type Beatmap struct {
@@ -38,7 +38,7 @@ func (b *Beatmap) SetToDb() error {
 }
 
 func (b *Beatmap) FetchFromApi(filename string) error {
-	res, err := config.ApiClient.GetBeatmaps(osuapi.GetBeatmapsOpts{
+	res, err := osuapi.GetBeatmaps(osuapi.GetBeatmapsOpts{
 		BeatmapHash: b.Md5,
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func (b *Beatmap) FetchFromApi(filename string) error {
 	}
 
 	if len(res) == 0 {
-		file := config.ApiClient.GetBeatmapContent(filename)
+		file := osuapi.GetBeatmapContent(filename)
 		if len(file) > 25 {
 			b.Status = constants.StatusNeedUpdate
 		} else {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/infernalfire72/flame/cache/users"
 	"net/http"
 
 	"github.com/infernalfire72/flame/constants"
@@ -61,38 +62,39 @@ func GetScores(ctx router.WebCtx) {
 		return
 	}
 
-	mode, err := qs.GetUint("m")
+	queryMode, err := qs.GetUint("m")
 	if err != nil {
 
 	}
 
-	mods, err := qs.GetUint("mods")
+	mode := constants.Mode(queryMode)
+	mode.Clamp()
+
+	queryMods, err := qs.GetUint("mods")
 	if err != nil {
 
 	}
+
+	mods := constants.Mod(queryMods)
 
 	filter, err := qs.GetUint("v")
 	if err != nil {
 
 	}
 
-	relax := (mods & 128) != 0
-
-	if relax {
-		clamp(&mode, 0, 2)
-	} else {
-		clamp(&mode, 0, 3)
-	}
+	relax := mods.Has(constants.ModRelax)
 
 	p.SetRelaxing(relax)
 
 	b := beatmaps.Get(md5)
 	if b == nil {
-		// Fetch from osu api if no result, get from /web/maps/filename if empty, not submitted, if content need update
+		// Fetch from osu api if no result, 
+		// get from /web/maps/filename if empty, not submitted, if content need update
 		b = beatmaps.FetchFromApi(md5, file)
 	}
 
 	if b == nil {
+		log.Warn("Got no beatmap from Database or API")
 		ctx.SetConnectionClose()
 		return
 	}
@@ -109,7 +111,7 @@ func GetScores(ctx router.WebCtx) {
 		limit = 250
 	}
 
-	if lb := leaderboards.Get(leaderboards.Identifier{md5, byte(mode), relax}); lb != nil {
+	if lb := leaderboards.Get(leaderboards.Identifier{md5, mode, relax}); lb != nil {
 		var scores leaderboards.Scores
 
 		switch filter {
@@ -121,14 +123,14 @@ func GetScores(ctx router.WebCtx) {
 			scores = lb.Country(p.Country)
 		default:
 			lb.Mutex.RLock()
-			scores = append(make(leaderboards.Scores, 0), lb.Scores...)
+			scores = append(scores, lb.Scores...)
 			lb.Mutex.RUnlock()
 		}
 
 		ctx.WriteString(b.OnlineRanked(len(scores)))
 
 		if personalBest, index := scores.GetPersonalBest(p.ID); personalBest != nil {
-			ctx.WriteString(personalBest.String(!lb.Relax || b.Status == constants.StatusLoved, index+1))
+			ctx.WriteString(personalBest.Online(!lb.Relax || b.Status == constants.StatusLoved, p.FullName(), index+1))
 		} else {
 			ctx.WriteString("\n")
 		}
@@ -138,15 +140,9 @@ func GetScores(ctx router.WebCtx) {
 		}
 
 		for i, score := range scores {
-			ctx.WriteString(score.String(!lb.Relax || b.Status == constants.StatusLoved, i+1))
+			if u := users.Get(score.UserID); u != nil && (u.Privileges.Has(constants.UserPublic) || u.ID == p.ID) {
+				ctx.WriteString(score.Online(!lb.Relax || b.Status == constants.StatusLoved, u.FullName(), i+1))
+			}
 		}
-	}
-}
-
-func clamp(mod *int, min, max int) {
-	if *mod > max {
-		*mod = max
-	} else if *mod < min {
-		*mod = min
 	}
 }

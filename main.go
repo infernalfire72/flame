@@ -30,7 +30,8 @@ func main() {
 		return
 	}
 
-	config.ApiClient = osuapi.New(conf.OsuApi.Key)
+	osuapi.Enabled = conf.OsuApi.Enable
+	osuapi.Key = conf.OsuApi.Key
 
 	web.Start(&conf.Web)
 	bancho.Start(&conf.Bancho)
@@ -39,7 +40,7 @@ func main() {
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-exit
 
-	bancho.Stop()
+	config.Database.Close()
 
 	log.Info("Exiting...")
 }

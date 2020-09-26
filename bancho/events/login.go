@@ -68,6 +68,12 @@ func Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	if players.FindUsername(u.Username) != nil {
+		ctx.Write(packets.Alert("You are already logged in on another client."))
+		invalidateLogin(ctx, ServerError)
+		return
+	}
+
 	if (u.Privileges & constants.UserPendingVerification) != 0 {
 		u.Privileges &= ^constants.UserPendingVerification
 		u.Privileges |= constants.UserNormal | constants.UserPublic

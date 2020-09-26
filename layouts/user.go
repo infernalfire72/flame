@@ -10,10 +10,10 @@ import (
 )
 
 type User struct {
-	ID           int    `db:"id"`
-	Username     string `db:"username"`
-	SafeUsername string `db:"username_safe"`
-	Password     string `db:"password_md5"`
+	ID           int                          `db:"id"`
+	Username     string                       `db:"username"`
+	SafeUsername string                       `db:"username_safe"`
+	Password     string                       `db:"password_md5"`
 	Country      byte
 	Privileges   constants.AkatsukiPrivileges `db:"privileges"`
 	ClanID       int                          `db:"clan_id"`
