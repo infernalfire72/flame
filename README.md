@@ -21,6 +21,7 @@
     - Score Submission, basically everything lol.
 
 # Planned
+  - SQLite, pgSQL support
   - Beatmap Uploads
   - Big API
   - Event Manager
