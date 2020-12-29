@@ -42,6 +42,7 @@ func init() {
 	db.AutoMigrate(&layouts.Score{})
 	db.Table("scores_relax").AutoMigrate(&layouts.Score{})
 	stats.AutoMigrate(database.DB)
+	log.Info("Database Migrated")
 
 	osuapi.Enabled = conf.OsuApi.Enable
 	osuapi.Key = conf.OsuApi.Key

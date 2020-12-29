@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	LoadCommands()
+	// LoadCommands()
 }
 
 const Prefix string = "!"
