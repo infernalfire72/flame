@@ -2,8 +2,9 @@ package events
 
 import (
 	"encoding/binary"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/layouts"
 
-	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 )
@@ -14,6 +15,9 @@ func AddFriend(p *objects.Player, bytes []byte) {
 	}
 
 	id := binary.LittleEndian.Uint32(bytes)
-	config.Database.Exec("REPLACE INTO users_relationships VALUES (?, ?)", p.ID, id)
+	database.DB.Save(&layouts.UserRelationship{
+		User1: p.ID,
+		User2: int(id),
+	})
 	log.Info(p, "added", id, "to their friends list.")
 }

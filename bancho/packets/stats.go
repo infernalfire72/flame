@@ -6,12 +6,12 @@ import (
 )
 
 func Stats(p *objects.Player) Packet {
-	var s *layouts.ModeData
+	var s *layouts.Stats
 
 	if p.Relaxing {
-		s = &p.Relax[p.Gamemode]
+		s = p.Stats[p.Gamemode]
 	} else {
-		s = &p.Vanilla[p.Gamemode]
+		s = p.Stats[p.Gamemode]
 	}
 
 	return MakePacket(11,

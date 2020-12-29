@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"github.com/infernalfire72/flame/cache/users"
+	"github.com/infernalfire72/flame/layouts"
+	"github.com/infernalfire72/flame/osuapi"
 	"net/http"
 
 	"github.com/infernalfire72/flame/constants"
@@ -90,58 +92,56 @@ func GetScores(ctx router.WebCtx) {
 	if b == nil {
 		// Fetch from osu api if no result, 
 		// get from /web/maps/filename if empty, not submitted, if content need update
-		b = beatmaps.FetchFromApi(md5, file)
-	}
+		if content := osuapi.GetBeatmapContent(file); len(content) == 0 {
+			ctx.WriteString("-1|false")
+		} else if len(content) < 64 {
+			ctx.WriteString("-2|false")
+		} else {
+			ctx.WriteString("1|false")
+		}
 
-	if b == nil {
-		log.Warn("Got no beatmap from Database or API")
 		ctx.SetConnectionClose()
 		return
 	}
 
-	if b.Status <= constants.StatusNeedUpdate {
-		ctx.WriteString(b.Online())
-		return
-	}
-
-	limit := 100
-	if p.Privileges.Has(constants.UserPremium) {
-		limit = 500
-	} else if p.Privileges.Has(constants.UserDonor) {
-		limit = 250
-	}
-
-	if lb := leaderboards.Get(leaderboards.Identifier{md5, mode, relax}); lb != nil {
-		var scores leaderboards.Scores
+	if lb := leaderboards.Get(leaderboards.Identifier{md5, relax, mode}); lb != nil {
+		var scores []*layouts.Score
 
 		switch filter {
 		case 2:
-			scores = lb.Mods(mods)
+			scores = lb.ModsFilter(mods)
 		case 3:
-			scores = lb.Friends(p.ID)
+			scores = lb.FriendsFilter(p.ID)
 		case 4:
-			scores = lb.Country(p.Country)
+			scores = lb.CountryFilter(p.Country)
 		default:
 			lb.Mutex.RLock()
 			scores = append(scores, lb.Scores...)
 			lb.Mutex.RUnlock()
 		}
 
-		ctx.WriteString(b.OnlineRanked(len(scores)))
+		ctx.WriteString(b.Online(len(scores)))
 
-		if personalBest, index := scores.GetPersonalBest(p.ID); personalBest != nil {
+		/*if personalBest, index := scores.GetPersonalBest(p.ID); personalBest != nil {
 			ctx.WriteString(personalBest.Online(!lb.Relax || b.Status == constants.StatusLoved, p.FullName(), index+1))
 		} else {
 			ctx.WriteString("\n")
+		}*/
+
+		limit := 100
+		if p.Privileges.Has(constants.UserPremium) {
+			limit = 500
+		} else if p.Privileges.Has(constants.UserDonor) {
+			limit = 250
 		}
 
 		if len(scores) > limit {
 			scores = scores[:limit]
 		}
 
-		for i, score := range scores {
-			if u := users.Get(score.UserID); u != nil && (u.Privileges.Has(constants.UserPublic) || u.ID == p.ID) {
-				ctx.WriteString(score.Online(!lb.Relax || b.Status == constants.StatusLoved, u.FullName(), i+1))
+		for _, score := range scores {
+			if u := users.Get(score.User); u != nil && (u.Privileges.Has(constants.UserPublic) || u.ID == p.ID) {
+				/*ctx.WriteString(score.Online(!lb.Relax || b.Status == constants.StatusLoved, u.FullName(), i+1))*/
 			}
 		}
 	}

@@ -1,17 +1,12 @@
 package commands
 
 import (
-	"errors"
 	"io/ioutil"
 	"strings"
 	"sync"
 
-	"github.com/containous/yaegi/interp"
-	"github.com/containous/yaegi/stdlib"
-
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
-	"github.com/infernalfire72/flame/symbols"
 
 	"github.com/infernalfire72/flame/bancho/packets"
 )
@@ -45,7 +40,7 @@ func GetCommand(name string) *Command {
 }
 
 func LoadCommand(path, name string) {
-	fs, err := ioutil.ReadDir(path)
+	/*fs, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Error(err)
 		return
@@ -71,7 +66,6 @@ func LoadCommand(path, name string) {
 
 	i := interp.New(interp.Options{})
 
-	i.Use(symbols.Bancho)
 	i.Use(stdlib.Symbols)
 
 	_, err = i.Eval(string(dat))
@@ -109,7 +103,7 @@ func LoadCommand(path, name string) {
 
 	Mutex.Lock()
 	Commands[name] = c
-	Mutex.Unlock()
+	Mutex.Unlock()*/
 }
 
 func UnloadCommands() {

@@ -1,12 +1,7 @@
 package packets
 
-import (
-	"github.com/infernalfire72/flame/io"
-	"github.com/infernalfire72/flame/layouts"
-)
-
 // 2 + 4 + 4 + 4 + 1 + 4 + 2 + 32 = 53
-func BeatmapInfo(beatmapInfo []*layouts.BeatmapInfo) Packet {
+/*func BeatmapInfo(beatmapInfo []*layouts.BeatmapInfo) Packet {
 	s := io.NewStreamWithCapacity(7 + 53*len(beatmapInfo))
 	s.WriteInt16(69)
 	s.WriteByte(0)
@@ -23,4 +18,4 @@ func BeatmapInfo(beatmapInfo []*layouts.BeatmapInfo) Packet {
 	}
 
 	return s.Content
-}
+}*/

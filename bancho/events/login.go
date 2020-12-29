@@ -2,6 +2,10 @@ package events
 
 import (
 	"database/sql"
+	"errors"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/layouts"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"time"
@@ -9,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
 
-	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
@@ -55,14 +58,8 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	s := &utils.Stopwatch{}
 	s.Start()
-	u, err := users.FindUsername(username)
-	if err != nil {
-		log.Error(err)
-		ctx.SetStatusCode(http.StatusInternalServerError)
-		invalidateLogin(ctx, ServerError)
-		return
-	}
 
+	u := users.FindUsername(username)
 	if u == nil || !u.VerifyPassword(password) {
 		invalidateLogin(ctx, InvalidLoginData)
 		return
@@ -77,7 +74,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 	if (u.Privileges & constants.UserPendingVerification) != 0 {
 		u.Privileges &= ^constants.UserPendingVerification
 		u.Privileges |= constants.UserNormal | constants.UserPublic
-		config.Database.Exec("UPDATE users SET privileges = ? WHERE id = ?", u.Privileges, u.ID)
+		database.DB.Save(u)
 	}
 
 	// Client Data Structure:
@@ -102,20 +99,27 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 	}
 
-	var match int
+	var err error
+
 	if hashSet[4] == "runningunderwine" {
-		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND unique_id = ?", u.ID, hashSet[3])
+		err = database.DB.
+			Where("userid <> ? AND activated AND unique_id = ?", u.ID, hashSet[3]).
+			Find(&layouts.HwidMatch{}).
+			Error
 	} else {
-		err = config.Database.Get(&match, "SELECT userid FROM hw_user WHERE userid <> ? AND activated AND disk_id = ? AND unique_id = ? AND mac = ?", u.ID, hashSet[4], hashSet[3], hashSet[2])
+		err = database.DB.
+			Where("userid <> ? AND activated AND unique_id = ?", u.ID, hashSet[3]).
+			Find(&layouts.HwidMatch{}).
+			Error
 	}
 
-	if err != nil && err != sql.ErrNoRows {
-		log.Error(err)
-		invalidateLogin(ctx, ServerError)
-		return
-	}
-
-	if match != 0 {
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error(err)
+			invalidateLogin(ctx, ServerError)
+			return
+		}
+	} else {
 		// Do stuff (restrict etc.)
 		// Restrict(match)
 		// Ban(userID)
@@ -152,16 +156,12 @@ func Login(ctx *fasthttp.RequestCtx) {
 	}
 	channels.Mutex.RUnlock()
 
-	// TODO: make this better
-	if player.Country == 0 {
-		var country string
-		if err = config.Database.Get(&country, "SELECT country FROM users_stats WHERE id = ?", player.ID); err == nil {
-			player.Country = utils.CountryByte(country)
-		}
-	}
-
-	if s := stats.Get(player.ID); s != nil {
-		player.Stats = s
+	if s := stats.Get(stats.Identifier{
+		User:  u.ID,
+		Mode:  0,
+		Relax: false,
+	}); s != nil {
+		player.Stats[0] = s
 	}
 
 	stats := packets.Stats(player)
@@ -181,8 +181,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 		players.Add(player)
 
-		var friends []int
-		err = config.Database.Select(&friends, "SELECT user2 FROM users_relationships WHERE user1 = ?", player.ID)
+		friends := utils.GetFriends(u.ID)
 		if err != nil && err != sql.ErrNoRows {
 			log.Error(err)
 			return

@@ -2,10 +2,10 @@ package web
 
 import (
 	"fmt"
+	"github.com/infernalfire72/flame/config/web"
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/log"
 
 	"github.com/infernalfire72/flame/web/handlers"
@@ -20,7 +20,7 @@ func wrap(next fasthttp.RequestHandler) fasthttp.RequestHandler {
 	}
 }
 
-func Start(conf *config.WebConfig) {
+func Start(conf *web.Config) {
 	r := router.NewRouter()
 
 	g := r.Group("/web")
@@ -33,10 +33,6 @@ func Start(conf *config.WebConfig) {
 	port := fmt.Sprintf(":%d", conf.Port)
 	log.Info("Started Web at", port)
 	go fasthttp.ListenAndServe(port, wrap(r.Handler))
-}
-
-func allT(ctx router.WebCtx) {
-	fmt.Println(string(ctx.Path()))
 }
 
 func ssTest(ctx *fasthttp.RequestCtx) {

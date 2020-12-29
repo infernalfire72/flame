@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/celso-wo/rijndael256"
-	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/constants"
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
@@ -93,24 +92,27 @@ func SubmitModular(ctx router.WebCtx) {
 
 	// Check if they're banned
 	if !p.Privileges.Has(constants.UserPublic | constants.UserNormal) {
+		ctx.Error("ban")
 		return
 	}
 
 	restricted := !p.Privileges.Has(constants.UserPublic)
 
-	var s layouts.Score
-	err = layouts.ReadScoreLayout(parts, &s)
+	s := &layouts.Score{}
+	err = s.Read(parts)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	beatmap := beatmaps.Get(s.BeatmapHash)
+	beatmap := beatmaps.Get(s.Beatmap)
 	if beatmap == nil {
 		ctx.Error("beatmap")
 		log.Warn("Score Submission |", "Beatmap doesn't exist in Database.")
 		return
 	}
+
+	isRelax := s.Mods.Has(constants.ModRelax)
 
 	/*
 	Code Removed because peppy let unranked shit submit so lets go ig
@@ -125,22 +127,22 @@ func SubmitModular(ctx router.WebCtx) {
 	// Calculate pp
 
 	maxPerformanceThreshold := func(mode constants.Mode, relax bool) float32 {
-		return 1700;
+		return 1700
 	}
 
 	if !restricted {
-		if max := maxPerformanceThreshold(s.Mode, s.Relax); s.Performance > max {
+		if max := maxPerformanceThreshold(s.Mode, isRelax); s.Performance > max {
 
 		}
 	}
 
-	lb := leaderboards.Get(leaderboards.Identifier{s.BeatmapHash, s.Mode, s.Relax})
+	lb := leaderboards.Get(leaderboards.Identifier{s.Beatmap, isRelax, s.Mode})
 	if lb == nil {
 		ctx.Error("beatmap")
 		return
 	}
 
-	oldPersonalBest, _ := lb.FindUserScore(p.ID)
+	/*oldPersonalBest, _ := lb.FindUserScore(p.ID)
 
 
 	if oldPersonalBest == nil || s.Performance >= oldPersonalBest.Performance {
@@ -153,10 +155,10 @@ func SubmitModular(ctx router.WebCtx) {
 	err = s.AddToDatabase(config.Database)
 	if err != nil {
 		log.Error(err)
-	}
+	}*/
 
 	if c := channels.Get("#announce"); c != nil {
-		bot.WriteMessagef(c, "%v submitted a score on %s", p, s.BeatmapHash)
+		bot.WriteMessagef(c, "%v submitted a score on %s", p, s.Beatmap)
 	}
 }
 

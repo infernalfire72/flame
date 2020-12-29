@@ -1,66 +1,40 @@
 package clans
 
 import (
-	"database/sql"
-	"sync"
-
-	"github.com/infernalfire72/flame/config"
+	"errors"
+	"github.com/infernalfire72/flame/config/database"
 	"github.com/infernalfire72/flame/log"
+	"gorm.io/gorm"
+	"sync"
 )
 
-type Clan struct {
-	ID          int    `db:"id"`
-	Name        string `db:"name"`
-	Tag         string `db:"tag"`
-	Description string `db:"description"`
-	Owner       int    `db:"owner"`
-
-	Members []int
-}
-
-var (
-	Mutex  sync.RWMutex
-	Values map[int]*Clan
-)
-
-func init() {
-	Mutex.Lock()
-	Values = make(map[int]*Clan)
-	Mutex.Unlock()
-}
+var values = map[int]*Clan{}
+var mutex sync.RWMutex
 
 func Get(id int) *Clan {
-	Mutex.RLock()
-	if v, ok := Values[id]; ok {
-		Mutex.RUnlock()
-		return v
-	}
+	mutex.RLock()
+	v, ok := values[id]
+	mutex.RUnlock()
 
-	Mutex.RUnlock()
-	return FetchFromDb(id)
+	if ok {
+		return v
+	} else {
+		return Fetch(id)
+	}
 }
 
-func FetchFromDb(id int) *Clan {
-	c := &Clan{}
-
-	err := config.Database.Get(c, "SELECT id, name, tag, description, owner FROM clans WHERE id = ?", id)
-	if err != nil {
-		if err != sql.ErrNoRows {
+func Fetch(id int) *Clan {
+	clan := &Clan{}
+	if err := database.DB.First(clan, id).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error(err)
 		}
-
 		return nil
 	}
 
-	err = config.Database.Select(&c.Members, "SELECT id FROM users WHERE clan_id = ?", id)
-	if err != nil && err != sql.ErrNoRows {
-		log.Error(err)
-		return nil
-	}
+	mutex.Lock()
+	values[id] = clan
+	mutex.Unlock()
 
-	Mutex.Lock()
-	Values[id] = c
-	Mutex.Unlock()
-
-	return c
+	return clan
 }

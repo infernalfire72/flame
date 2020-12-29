@@ -1,73 +1,70 @@
 package beatmaps
 
 import (
-	"sync"
-	"time"
-
-	"github.com/infernalfire72/flame/constants"
+	"errors"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
+	"github.com/infernalfire72/flame/osuapi"
+	"gorm.io/gorm"
+	"sync"
 )
 
-var (
-	Mutex  sync.RWMutex
-	Values map[string]*Beatmap
-)
+var values = map[string]*layouts.Beatmap{}
+var mutex sync.RWMutex
 
-func init() {
-	Values = make(map[string]*Beatmap)
+func Get(hash string) *layouts.Beatmap {
+	mutex.RLock()
+	v, ok := values[hash]
+	mutex.RUnlock()
+
+	if ok {
+		return v
+	} else {
+		return Fetch(hash)
+	}
 }
 
-func Get(md5 string) *Beatmap {
-	Mutex.RLock()
-	if v, ok := Values[md5]; ok {
-		Mutex.RUnlock()
-
-		now := time.Now()
-		if now.Sub(v.LastUpdate).Seconds() > 30 {
-			v.FetchFromDb()
+func Fetch(hash string) *layouts.Beatmap {
+	b := &layouts.Beatmap{Hash: hash}
+	if err := database.DB.Where(b).First(b).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error(err)
 		}
 
-		return v
-	}
-	Mutex.RUnlock()
-	return FetchFromDb(md5)
-}
+		res, err := osuapi.GetBeatmaps(osuapi.GetBeatmapsOpts{
+			BeatmapHash: hash,
+		})
 
-func FetchFromDb(md5 string) *Beatmap {
-	b := &Beatmap{
-		Md5: md5,
-	}
+		if err != nil {
+			log.Error(err)
+			return nil
+		}
 
-	err := b.FetchFromDb()
-	if err != nil {
-		log.Error(err)
-		return nil
-	}
+		if len(res) == 0 {
+			return nil
+		}
 
-	Mutex.Lock()
-	defer Mutex.Unlock()
+		set, err := osuapi.GetBeatmaps(osuapi.GetBeatmapsOpts{
+			BeatmapSetID: res[0].BeatmapSetID,
+		})
 
-	Values[md5] = b
-	return b
-}
 
-func FetchFromApi(md5, filename string) *Beatmap {
-	b := &Beatmap{
-		Md5: md5,
-	}
+		for _, m := range set {
+			bm := &layouts.Beatmap{}
+			layouts.BeatmapFromApiModel(bm, &m)
 
-	err := b.FetchFromApi(filename)
-	if err != nil {
-		log.Error(err)
-		return nil
-	}
+			mutex.Lock()
+			if _, ok := values[bm.Hash]; !ok {
+				values[bm.Hash] = bm
+			}
+			mutex.Unlock()
 
-	if b.Status >= constants.StatusRanked {
-		b.SetToDb()
-
-		Mutex.Lock()
-		Values[md5] = b
-		Mutex.Unlock()
+			database.DB.Save(bm)
+			if m.FileMD5 == hash {
+				b = bm
+			}
+		}
 	}
 
 	return b

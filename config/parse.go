@@ -1,6 +1,9 @@
 package config
 
 import (
+	"github.com/infernalfire72/flame/config/bancho"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/config/web"
 	"io/ioutil"
 	"os"
 
@@ -11,9 +14,9 @@ import (
 const FileName = "./conf.flm"
 
 type Config struct {
-	Database DatabaseConfig
-	Bancho   BanchoConfig
-	Web      WebConfig
+	Database database.Config
+	Bancho   bancho.Config
+	Web      web.Config
 	OsuApi   OsuApiConfig
 }
 
@@ -23,7 +26,8 @@ type OsuApiConfig struct {
 }
 
 var (
-	Web *WebConfig
+	Web    web.Config
+	Bancho bancho.Config
 )
 
 func Load() (*Config, error) {
@@ -45,7 +49,8 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	Web = &conf.Web
+	Web = conf.Web
+	Bancho = conf.Bancho
 
 	defer log.Info("Config has been loaded")
 	return conf, nil
@@ -60,14 +65,13 @@ func Create() {
 	defer file.Close()
 
 	c := Config{
-		Database: DatabaseConfig{
-			Username: "root",
-			Database: "akatsuki",
+		Database: database.Config{
+			ConnectionString: "user:pass@tcp(127.0.0.1:3306)/flame?charset=utf8mb4&parseTime=True&loc=Local",
 		},
-		Bancho: BanchoConfig{
+		Bancho: bancho.Config {
 			Port: 5001,
 		},
-		Web: WebConfig{
+		Web: web.Config{
 			Port:           5002,
 			ScreenshotPath: "./data/screenshots/%s.png",
 		},

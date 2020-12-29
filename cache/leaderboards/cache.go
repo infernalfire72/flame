@@ -1,94 +1,63 @@
 package leaderboards
 
 import (
+	"errors"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/layouts"
+	"github.com/infernalfire72/flame/log"
+	"gorm.io/gorm"
 	"sync"
 )
 
-var (
-	Mutex  sync.RWMutex
-	Values map[Identifier]*Leaderboard
-)
+var values = map[Identifier]*Leaderboard{}
+var mutex sync.RWMutex
 
-func init() {
-	Mutex.Lock()
-	Values = make(map[Identifier]*Leaderboard)
-	Mutex.Unlock()
-}
+func Get(identifier Identifier) *Leaderboard {
+	mutex.RLock()
+	v, ok := values[identifier]
+	mutex.RUnlock()
 
-func Get(id Identifier) *Leaderboard {
-	Mutex.RLock()
-	if v, ok := Values[id]; ok {
-		Mutex.RUnlock()
+	if ok {
 		return v
+	} else {
+		return Fetch(identifier)
 	}
-	Mutex.RUnlock()
-	return FetchFromDb(id)
 }
 
-func FetchFromDb(identifier Identifier) *Leaderboard {
-	lb := &Leaderboard{
-		BeatmapMd5: identifier.Md5,
-		Mode:       identifier.Mode,
-		Relax:      identifier.Relax,
+func Fetch(identifier Identifier) *Leaderboard {
+	scores := make([]*layouts.Score, 0)
+
+	var tableName string
+	if identifier.Relax {
+		tableName = "scores_relax"
+	} else {
+		tableName = "scores"
 	}
 
-	lb.FetchFromDb()
-	Mutex.Lock()
-	defer Mutex.Unlock()
+	err := database.DB.
+		Table(tableName).
+		Where(&layouts.Score{
+			Beatmap: identifier.Beatmap,
+			Mode: identifier.Mode,
+		}).
+		Find(&scores).
+		Error
 
-	Values[identifier] = lb
-	return lb
-}
-
-func RemoveUser(id int) {
-	Mutex.RLock()
-	for _, a := range Values {
-		a.RemoveUser(id)
-	}
-	Mutex.RUnlock()
-}
-
-func RemoveUserWithIdentifier(id int, rx bool) {
-	Mutex.RLock()
-	for _, a := range Values {
-		if a.Relax == rx {
-			a.RemoveUser(id)
-		}
-	}
-	Mutex.RUnlock()
-}
-
-// TODO: rewrite this using layouts.Score
-/*func AddUser(id int) {
-	for i, table := range [...]string{"scores", "scores_relax"} {
-		var relax bool
-		if i == 1 {
-			relax = true
-		}
-
-		rows, err := config.Database.Query("SELECT "+table+".id, userid, score, pp, COALESCE(CONCAT('[', tag, '] ', username), username) AS username, max_combo, full_combo, mods, 300_count, 100_count, 50_count, katus_count, gekis_count, misses_count, time, play_mode, beatmap_md5 FROM "+table+" LEFT JOIN users ON users.id = userid LEFT JOIN clans ON clans.id = users.clan_id WHERE userid = ? AND completed = 3", id)
-		if err != nil {
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error(err)
 		}
-		defer rows.Close()
-
-		for rows.Next() {
-			s := &Score{}
-			var (
-				md5  string
-				mode constants.Mode
-			)
-			err = rows.Scan(&s.ID, &s.UserID, &s.Score, &s.Performance, &s.Combo, &s.FullCombo, &s.Mods, &s.N300, &s.N100, &s.N50, &s.NKatu, &s.NGeki, &s.NMiss, &s.Timestamp, &mode, &md5)
-			if err != nil {
-				log.Error(err)
-			}
-
-			id := Identifier{md5, mode, relax}
-			Mutex.RLock()
-			if value, ok := Values[id]; ok {
-				value.AddScore(s)
-			}
-			Mutex.RUnlock()
-		}
+		return nil
 	}
-}*/
+
+	lb := &Leaderboard{
+		Identifier: identifier,
+		Scores: scores,
+	}
+
+	mutex.Lock()
+	values[identifier] = lb
+	mutex.Unlock()
+
+	return lb
+}

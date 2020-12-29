@@ -3,6 +3,7 @@ package objects
 import (
 	"errors"
 	"fmt"
+	"github.com/infernalfire72/flame/bancho/models"
 	"sort"
 	"sync"
 	"time"
@@ -21,9 +22,9 @@ type Player struct {
 	Longitude float32
 	Latitude  float32
 
-	*layouts.Stats
+	Stats [7]*layouts.Stats
 
-	layouts.Status
+	models.Status
 	Relaxing bool
 
 	Channels     []*Channel

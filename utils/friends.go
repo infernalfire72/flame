@@ -1,19 +1,22 @@
 package utils
 
 import (
-	"github.com/infernalfire72/flame/config"
+	"github.com/infernalfire72/flame/config/database"
+	"github.com/infernalfire72/flame/layouts"
 )
 
 // TODO: make this better
-func GetFriends(user1 int) []int {
-	var friends []int
-	config.Database.Select(&friends, "SELECT user2 FROM users_relationships WHERE user1 = ?", user1)
+func GetFriends(user1 int) []layouts.UserRelationship {
+	var friends []layouts.UserRelationship
+	database.DB.Where(&layouts.UserRelationship{
+		User1: user1,
+	}).Find(&friends)
 	return friends
 }
 
-func Has(a []int, b int) bool {
+func Has(a []layouts.UserRelationship, b int) bool {
 	for _, v := range a {
-		if v == b {
+		if v.User2 == b {
 			return true
 		}
 	}

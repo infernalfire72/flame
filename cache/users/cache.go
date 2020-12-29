@@ -1,98 +1,72 @@
 package users
 
 import (
-	"database/sql"
-	"sync"
-
-	"github.com/infernalfire72/flame/config"
+	"errors"
+	"github.com/infernalfire72/flame/config/database"
 	"github.com/infernalfire72/flame/layouts"
 	"github.com/infernalfire72/flame/log"
-	"github.com/infernalfire72/flame/utils"
+	"gorm.io/gorm"
+	"sync"
 )
 
-var (
-	Values map[int]*layouts.User
-	Mutex  sync.RWMutex
-)
-
-func init() {
-	Mutex.Lock()
-	Values = make(map[int]*layouts.User)
-	Mutex.Unlock()
-}
+var values = map[int]*layouts.User{}
+var mutex sync.RWMutex
 
 func Get(id int) *layouts.User {
-	Mutex.RLock()
-	if v, ok := Values[id]; ok {
-		Mutex.RUnlock()
+	mutex.RLock()
+
+	v, ok := values[id]
+	mutex.RUnlock()
+
+	if ok {
 		return v
+	} else {
+		return Fetch(id)
 	}
-	Mutex.RUnlock()
-
-	return FetchFromDb(id)
 }
 
-func FindUsername(username string) (*layouts.User, error) {
-	Mutex.RLock()
-	for _, u := range Values {
-		if u.Username == username || u.SafeUsername == username {
-			Mutex.RUnlock()
-			return u, nil
+func FindUsername(name string) *layouts.User {
+	mutex.RLock()
+
+	for _, u := range values {
+		if u.Username == name {
+			mutex.RUnlock()
+			return u
 		}
 	}
 
-	Mutex.RUnlock()
-	return FetchFromDbUsername(username, username)
+	mutex.RUnlock()
+	return FetchWithUsername(name)
 }
 
-func FetchFromDbUsername(username, safe string) (*layouts.User, error) {
-	u := &layouts.User{}
-	err := config.Database.Get(u, "SELECT id, username, username_safe, password_md5, privileges, clan_id FROM users WHERE username = ? OR username_safe = ?", username, safe)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-
-		log.Error(err)
-		return nil, err
-	}
-
-	Mutex.Lock()
-	Values[u.ID] = u
-	Mutex.Unlock()
-
-	return u, nil
-}
-
-func Update(id int) {
-	Mutex.RLock()
-	if u, ok := Values[id]; ok {
-		err := config.Database.Get(u, "SELECT id, username, username_safe, privileges, clan_id FROM users WHERE id = ?", id)
-		if err != nil && err != sql.ErrNoRows {
-			log.Error(err)
-		}
-	}
-	Mutex.RUnlock()
-}
-
-func FetchFromDb(id int) *layouts.User {
-	u := &layouts.User{} // & > *
-	err := config.Database.Get(u, "SELECT users.id, username, username_safe, password_md5, privileges, clan_id FROM users WHERE id = ?", id)
-	if err != nil {
-		if err != sql.ErrNoRows {
+func FetchWithUsername(name string) *layouts.User {
+	user := &layouts.User{Username: name, SafeUsername: name}
+	if err := database.DB.Where(user).First(user).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error(err)
 		}
 		return nil
 	}
 
-	var country string
-	if err = config.Database.Get(&country, "SELECT country FROM users_stats WHERE id = ?", id); err == nil {
-		u.Country = utils.CountryByte(country)
+	mutex.Lock()
+	values[user.ID] = user
+	mutex.Unlock()
+
+	return user
+}
+
+func Fetch(id int) *layouts.User {
+	user := &layouts.User{}
+	if err := database.DB.First(user, id).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Error(err)
+		}
+		return nil
 	}
 
-	Mutex.Lock()
-	Values[id] = u
-	Mutex.Unlock()
+	mutex.Lock()
+	values[user.ID] = user
+	mutex.Unlock()
 
-	return u
+	return user
 }

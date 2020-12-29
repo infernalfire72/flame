@@ -1,7 +1,7 @@
 package events
 
 import (
-	"github.com/infernalfire72/flame/layouts"
+	"github.com/infernalfire72/flame/bancho/models"
 	"github.com/infernalfire72/flame/log"
 	"github.com/infernalfire72/flame/objects"
 
@@ -12,9 +12,8 @@ import (
 )
 
 func PrivateMessage(p *objects.Player, bytes []byte) {
-	var m layouts.Message
-
-	err := layouts.ReadMessage(bytes, &m)
+	m := models.Message{}
+	err := m.Unmarshal(bytes)
 	if err != nil {
 		log.Error(err)
 		return

@@ -2,9 +2,9 @@ package bancho
 
 import (
 	"fmt"
+	"github.com/infernalfire72/flame/config/bancho"
 
 	"github.com/fasthttp/router"
-	"github.com/infernalfire72/flame/config"
 	"github.com/infernalfire72/flame/io"
 	"github.com/infernalfire72/flame/log"
 	"github.com/valyala/fasthttp"
@@ -14,7 +14,7 @@ import (
 	"github.com/infernalfire72/flame/bancho/players"
 )
 
-func Start(conf *config.BanchoConfig) {
+func Start(conf *bancho.Config) {
 	r := router.New()
 
 	r.POST("/", banchoMain)
@@ -125,7 +125,9 @@ func banchoMain(ctx *fasthttp.RequestCtx) {
 			case 63:
 				events.JoinChannel(p, data)
 			case 68:
-				events.BeatmapInfoRequest(p, data)
+				// Deprecated Packet
+				// events.BeatmapInfoRequest(p, data)
+				break
 			case 70:
 				events.MatchChangeHost(p, data)
 			case 73:
