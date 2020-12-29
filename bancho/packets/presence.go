@@ -2,6 +2,7 @@ package packets
 
 import (
 	"github.com/infernalfire72/flame/objects"
+	"github.com/infernalfire72/flame/utils"
 )
 
 func Presence(p *objects.Player) Packet {
@@ -9,7 +10,7 @@ func Presence(p *objects.Player) Packet {
 		p.ID,
 		p.Username,
 		p.Timezone,
-		p.Country,
+		utils.CountryByte(p.Country),
 		byte(p.IngamePrivileges&0x1f)|((p.Gamemode&0x70)<<5),
 		p.Longitude,
 		p.Latitude,

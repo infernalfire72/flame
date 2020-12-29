@@ -6,7 +6,6 @@ import (
 	"github.com/infernalfire72/flame/objects"
 
 	"github.com/infernalfire72/flame/bancho/bot"
-	"github.com/infernalfire72/flame/bancho/bot/commands"
 	"github.com/infernalfire72/flame/bancho/packets"
 	"github.com/infernalfire72/flame/bancho/players"
 )
@@ -26,7 +25,7 @@ func PrivateMessage(p *objects.Player, bytes []byte) {
 	p.AwaiterMutex.RUnlock()
 
 	if bot.Player != nil && m.Target == bot.Player.Username {
-		go commands.Execute(p, m.Content, p)
+		// go commands.Execute(p, m.Content, p)
 		log.Chat(p.String(), bot.Player.String(), m.Content)
 		return
 	}

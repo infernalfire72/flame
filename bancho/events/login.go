@@ -164,16 +164,16 @@ func Login(ctx *fasthttp.RequestCtx) {
 		player.Stats[0] = s
 	}
 
-	stats := packets.Stats(player)
+	statsPacket := packets.Stats(player)
 	presence := packets.Presence(player)
 
 	ctx.Write(presence)
-	ctx.Write(stats)
+	ctx.Write(statsPacket)
 
 	go func() {
 		players.ForEach(func(p *objects.Player) {
 			if len(p.Token) != 0 {
-				p.Write(presence, stats)
+				p.Write(presence, statsPacket)
 			}
 
 			player.Write(packets.Presence(p), packets.Stats(p))
