@@ -111,9 +111,9 @@ func (s *Stream) WriteString(value string) {
 	}
 	s.WriteByte(11)
 
-	for length >= 127 {
-		s.WriteByte(128)
-		length -= 127
+	for length > 127 {
+		s.WriteByte(byte((length & 0x7f) | 0x80))
+		length >>= 7
 	}
 	s.WriteByte(byte(length))
 	s.WriteByteSlice([]byte(value))
@@ -244,19 +244,20 @@ func (s *Stream) ReadString() (string, error) {
 		return "", nil
 	}
 
-	length := 0
 	var (
-		v   byte
-		err error
+		length int
+		shift  int
+		v      byte
+		err    error
 	)
 	for {
 		v, err = s.ReadByte()
-		if v == 128 {
-			length += 127
-		} else if err != nil {
+		if err != nil {
 			return "", err
-		} else {
-			length += int(v)
+		}
+		length |= int(v & 0x7f) << shift
+		shift += 7
+		if (v & 128) == 0 {
 			break
 		}
 	}
